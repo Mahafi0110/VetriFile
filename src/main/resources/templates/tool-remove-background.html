@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compress PDF – Vetri Files</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        :root {
+            --blue-dark: #1E3A8A;
+            --blue-main: #3B82F6;
+            --heading: #1F2937;
+            --subtext: #4A5565;
+            --accent-1: #F3F4F6;
+            --accent-2: #E5E7EB;
+            --white: #ffffff;
+            --green: #16A34A;
+            --radius-card: 16px;
+            --radius-btn: 50px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--heading);
+            background: var(--accent-1);
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        .brand-name {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            background: var(--white);
+            padding: 14px 0;
+            border-bottom: 1px solid var(--accent-2);
+            position: sticky;
+            top: 0;
+            z-index: 1050;
+            box-shadow: 0 1px 8px rgba(0, 0, 0, .05);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-icon i {
+            color: #fff;
+            font-size: 1.2rem;
+        }
+
+        .brand-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--heading);
+        }
+
+        .navbar-nav .nav-link {
+            font-size: .95rem;
+            font-weight: 500;
+            color: var(--heading) !important;
+            padding: 6px 14px !important;
+            transition: color .2s;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--blue-main) !important;
+        }
+
+        .btn-login {
+            font-size: .9rem;
+            font-weight: 500;
+            color: var(--blue-main) !important;
+            padding: 6px 14px !important;
+            border-radius: var(--radius-btn);
+        }
+
+        .btn-get-started {
+            font-family: 'Poppins', sans-serif;
+            font-size: .9rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
+            color: #fff !important;
+            border: none;
+            padding: 10px 24px !important;
+            border-radius: var(--radius-btn);
+            box-shadow: 0 4px 14px rgba(59, 130, 246, .35);
+            transition: transform .2s;
+            white-space: nowrap;
+        }
+
+        .btn-get-started:hover {
+            transform: translateY(-1px);
+        }
+
+        .navbar-toggler {
+            border: none;
+            padding: 4px 8px;
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%231F2937' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        @media (max-width:991.98px) {
+            .navbar-collapse {
+                background: var(--white);
+                border-top: 1px solid var(--accent-2);
+                padding: 12px 0 16px;
+                margin-top: 10px;
+            }
+
+            .navbar-nav {
+                align-items: flex-start !important;
+                padding: 0 8px;
+            }
+
+            .btn-login,
+            .btn-get-started {
+                margin: 4px 8px !important;
+            }
+        }
+
+        /* ── Page Header ── */
+        .page-header {
+            background: var(--accent-1);
+            padding: 20px 0 24px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .9rem;
+            font-weight: 500;
+            color: var(--subtext);
+            text-decoration: none;
+            margin-bottom: 6px;
+            transition: color .2s;
+        }
+
+        .back-link:hover {
+            color: var(--blue-main);
+        }
+
+        .page-title {
+            font-size: clamp(1.4rem, 3vw, 1.9rem);
+            font-weight: 800;
+            color: var(--heading);
+            margin: 0;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            background: var(--white);
+            border-top: 1px solid var(--accent-2);
+            padding: 56px 0 0;
+        }
+
+        .footer-brand-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--heading);
+        }
+
+        .footer-tagline {
+            font-size: .88rem;
+            color: var(--subtext);
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .footer-col-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: .95rem;
+            font-weight: 700;
+            color: var(--heading);
+            margin-bottom: 16px;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            font-size: .88rem;
+            color: var(--subtext);
+            text-decoration: none;
+            transition: color .2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--blue-main);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--accent-2);
+            padding: 18px 0;
+            margin-top: 48px;
+        }
+
+        .footer-copy {
+            font-size: .84rem;
+            color: var(--subtext);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .social-links a {
+            width: 36px;
+            height: 36px;
+            border: 1.5px solid var(--accent-2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--subtext);
+            font-size: .95rem;
+            text-decoration: none;
+            transition: border-color .2s, color .2s, background .2s;
+        }
+
+        .social-links a:hover {
+            border-color: var(--blue-main);
+            color: var(--blue-main);
+            background: #EFF6FF;
+        }
+
+        @media (max-width:767.98px) {
+            .tool-main {
+                padding: 20px 0 48px;
+            }
+
+            .settings-card {
+                margin-bottom: 16px;
+            }
+
+            .modal-box {
+                padding: 36px 24px 32px;
+            }
+
+            .footer {
+                padding: 40px 0 0;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 14px;
+                text-align: center;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+
+            .stats-row {
+                flex-direction: column;
+            }
+
+            .success-stats {
+                flex-direction: column;
+            }
+        }
+
+        .tool-main {
+            padding: 24px 0 64px;
+        }
+
+        .page-header {
+            background: var(--accent-1);
+            padding: 20px 0 24px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .9rem;
+            font-weight: 500;
+            color: var(--subtext);
+            text-decoration: none;
+            margin-bottom: 6px;
+            transition: color .2s;
+        }
+
+        .back-link:hover {
+            color: var(--blue-main);
+        }
+
+        .page-title {
+            font-size: clamp(1.4rem, 3vw, 1.9rem);
+            font-weight: 800;
+            color: var(--heading);
+            margin: 0;
+        }
+
+        /* Settings */
+        .settings-card {
+            background: var(--white);
+            border: 1.5px solid var(--accent-2);
+            border-radius: 16px;
+            padding: 28px 24px;
+            height: 100%;
+        }
+
+        .settings-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--heading);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-title i {
+            color: var(--blue-main);
+        }
+
+        .divider-line {
+            border: none;
+            border-top: 1.5px solid var(--accent-2);
+            margin: 20px 0;
+        }
+
+        .form-label-custom {
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--heading);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* File info */
+        .file-info-box {
+            background: var(--accent-1);
+            border: 1.5px solid var(--accent-2);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .file-info-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: .95rem;
+            flex-shrink: 0;
+        }
+
+        .img-icon {
+            background: linear-gradient(135deg, #0D9488, #2DD4BF);
+        }
+
+        .file-info-name {
+            font-size: .82rem;
+            font-weight: 700;
+            color: var(--heading);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-info-size {
+            font-size: .75rem;
+            color: var(--subtext);
+            margin: 0;
+        }
+
+        /* BG options */
+        .bg-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bg-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border: 1.5px solid var(--accent-2);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: .83rem;
+            font-weight: 500;
+            color: var(--heading);
+            transition: all .2s;
+        }
+
+        .bg-option:hover {
+            border-color: var(--blue-main);
+            background: #EFF6FF;
+        }
+
+        .bg-option.active {
+            border-color: var(--blue-main);
+            background: #EFF6FF;
+        }
+
+        .bg-swatch {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .transparent-swatch {
+            background: repeating-conic-gradient(#CBD5E1 0% 25%, #fff 0% 50%) 0 0 / 10px 10px;
+            color: #9CA3AF;
+            font-size: .7rem;
+        }
+
+        .white-swatch {
+            background: #fff;
+            border: 1.5px solid var(--accent-2);
+        }
+
+        .black-swatch {
+            background: #111827;
+        }
+
+        .color-swatch {
+            background: #3B82F6;
+        }
+
+        .bg-check {
+            color: var(--blue-main);
+            margin-left: auto;
+            display: none;
+            font-size: .9rem;
+        }
+
+        .bg-option.active .bg-check {
+            display: block;
+        }
+
+        /* Color picker */
+        .color-picker-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-picker-wrap input[type="color"] {
+            width: 40px;
+            height: 36px;
+            border: 1.5px solid var(--accent-2);
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .color-picker-wrap span {
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--heading);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Select */
+        .select-custom {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: .9rem;
+            font-family: 'Inter', sans-serif;
+            border: 1.5px solid var(--accent-2);
+            border-radius: 10px;
+            background: var(--white);
+            color: var(--heading);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234A5565' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            cursor: pointer;
+            transition: border-color .2s;
+        }
+
+        .select-custom:focus {
+            outline: none;
+            border-color: var(--blue-main);
+        }
+
+        /* Refinement buttons */
+        .refinement-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .ref-btn {
+            flex: 1;
+            padding: 9px 4px;
+            font-size: .78rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            border: 1.5px solid var(--accent-2);
+            border-radius: 10px;
+            background: var(--white);
+            color: var(--subtext);
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .ref-btn:hover {
+            border-color: var(--blue-main);
+            color: var(--blue-main);
+        }
+
+        .ref-btn.active {
+            border-color: var(--blue-main);
+            background: #EFF6FF;
+            color: var(--blue-dark);
+        }
+
+        /* Preview card */
+        .preview-card {
+            background: var(--white);
+            border: 1.5px solid var(--accent-2);
+            border-radius: 16px;
+            padding: 28px 24px;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .preview-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--heading);
+            margin: 0;
+        }
+
+        .preview-tabs {
+            display: flex;
+            background: var(--accent-1);
+            border-radius: 10px;
+            padding: 3px;
+            gap: 2px;
+        }
+
+        .prev-tab {
+            padding: 7px 14px;
+            font-size: .8rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--subtext);
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .prev-tab.active {
+            background: var(--white);
+            color: var(--heading);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+        }
+
+        /* Preview area */
+        .preview-area {
+            background: repeating-conic-gradient(#E5E7EB 0% 25%, #F9FAFB 0% 50%) 0 0 / 20px 20px;
+            border-radius: 12px;
+            min-height: 340px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .no-img-state {
+            text-align: center;
+            color: #9CA3AF;
+            padding: 24px;
+        }
+
+        .no-img-state i {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .no-img-state p {
+            font-size: .95rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--subtext);
+        }
+
+        .no-img-state span {
+            font-size: .82rem;
+        }
+
+        .preview-tab-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        /* Result bg */
+        .result-bg {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 16px;
+            transition: background .3s;
+        }
+
+        .result-bg.bg-white {
+            background: #fff;
+        }
+
+        .result-bg.bg-black {
+            background: #111827;
+        }
+
+        /* .result-bg.bg-custom {} */
+
+        /* Processing overlay */
+        .processing-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, .85);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border-radius: 12px;
+        }
+
+        .processing-overlay.show {
+            display: flex;
+        }
+
+        .mini-spinner {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 4px solid var(--accent-2);
+            border-top-color: var(--blue-main);
+            animation: spin .8s linear infinite;
+        }
+
+        .processing-overlay p {
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--heading);
+            margin: 0;
+        }
+
+        /* Compare */
+        .compare-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .compare-side {
+            flex: 1;
+            min-width: 160px;
+            text-align: center;
+        }
+
+        .compare-label {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--subtext);
+            margin-bottom: 8px;
+        }
+
+        .compare-img {
+            max-width: 100%;
+            max-height: 240px;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1.5px solid var(--accent-2);
+        }
+
+        .compare-divider {
+            color: var(--blue-main);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* Status bar */
+        .status-bar {
+            background: var(--accent-1);
+            border: 1.5px solid var(--accent-2);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            transition: all .3s;
+        }
+
+        .status-bar.done {
+            background: #F0FDF4;
+            border-color: #BBF7D0;
+        }
+
+        .status-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #0D9488, #2DD4BF);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: .95rem;
+            flex-shrink: 0;
+        }
+
+        .status-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--heading);
+            margin: 0 0 2px;
+        }
+
+        .status-sub {
+            font-size: .75rem;
+            color: var(--subtext);
+            margin: 0;
+        }
+
+        .status-badge {
+            margin-left: auto;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: .72rem;
+            font-weight: 600;
+            background: var(--accent-2);
+            color: var(--subtext);
+            white-space: nowrap;
+        }
+
+        .status-badge.done {
+            background: #DCFCE7;
+            color: #16A34A;
+        }
+
+        /* Process button */
+        .btn-process {
+            width: 100%;
+            padding: 16px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #0D9488, #2DD4BF);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(13, 148, 136, .35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform .2s, box-shadow .2s;
+            cursor: pointer;
+        }
+
+        .btn-process:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(13, 148, 136, .45);
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(30, 30, 30, .55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-box {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 48px 40px 44px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, .18);
+            transform: scale(.95);
+            transition: transform .3s;
+        }
+
+        .modal-overlay.show .modal-box {
+            transform: scale(1);
+        }
+
+        .spinner-ring {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 5px solid var(--accent-2);
+            border-top-color: #0D9488;
+            animation: spin .9s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .modal-title-text {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--heading);
+            margin-bottom: 10px;
+        }
+
+        .modal-sub-text {
+            font-size: .9rem;
+            color: var(--subtext);
+            margin-bottom: 24px;
+        }
+
+        .progress-track {
+            background: var(--accent-2);
+            border-radius: 50px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 50px;
+            background: linear-gradient(90deg, #0D9488, #2DD4BF);
+            width: 0%;
+            transition: width .3s ease;
+        }
+
+        /* Success */
+        .success-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: .85rem;
+            color: var(--subtext);
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: color .2s;
+        }
+
+        .success-back:hover {
+            color: var(--blue-main);
+        }
+
+        .success-circle {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0D9488, #2DD4BF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 6px 20px rgba(13, 148, 136, .3);
+        }
+
+        .success-circle i {
+            color: #fff;
+            font-size: 2rem;
+        }
+
+        .success-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--heading);
+            margin-bottom: 8px;
+        }
+
+        .success-file {
+            font-size: .9rem;
+            color: var(--subtext);
+            margin-bottom: 4px;
+        }
+
+        .success-note {
+            font-size: .85rem;
+            color: var(--subtext);
+            margin-bottom: 20px;
+        }
+
+        .result-summary {
+            background: var(--accent-1);
+            border: 1.5px solid var(--accent-2);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .result-summary-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            font-size: .85rem;
+            color: var(--heading);
+        }
+
+        .result-summary-item i {
+            color: #0D9488;
+            width: 16px;
+        }
+
+        .result-summary-item:not(:last-child) {
+            border-bottom: 1px solid var(--accent-2);
+        }
+
+        .btn-download {
+            width: 100%;
+            padding: 15px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #0D9488, #2DD4BF);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(13, 148, 136, .35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform .2s;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-process-another {
+            width: 100%;
+            padding: 14px;
+            font-family: 'Poppins', sans-serif;
+            font-size: .95rem;
+            font-weight: 600;
+            background: var(--white);
+            color: var(--heading);
+            border: 1.5px solid var(--accent-2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: border-color .2s, color .2s;
+        }
+
+        .btn-process-another:hover {
+            border-color: #0D9488;
+            color: #0D9488;
+        }
+
+        @media (max-width:767.98px) {
+            .tool-main {
+                padding: 20px 0 48px;
+            }
+
+            .settings-card {
+                margin-bottom: 16px;
+            }
+
+            .modal-box {
+                padding: 36px 24px 32px;
+            }
+
+            .compare-wrap {
+                flex-direction: column;
+            }
+
+            .preview-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ════════════════════════════════
+     NAVBAR
+════════════════════════════════ -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+                <span class="brand-name">Vetri Files</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/all-tools">Tools</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+                    <a href="/login" class="nav-link btn-login">Login</a>
+                    <a href="/register" class="nav-link btn-get-started">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ════════════════════════════════
+     PAGE HEADER
+════════════════════════════════ -->
+    <div class="page-header">
+        <div class="container">
+            <a href="/file-tools" class="back-link">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+            <h1 class="page-title">Remove Background</h1>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="tool-main">
+        <div class="container">
+            <div class="row g-4">
+
+                <!-- ── Settings Panel ── -->
+                <div class="col-12 col-lg-3">
+                    <div class="settings-card">
+                        <div class="settings-title">
+                            <i class="bi bi-gear-fill"></i> Settings
+                        </div>
+
+                        <!-- File Info -->
+                        <div class="file-info-box">
+                            <div class="file-info-icon img-icon">
+                                <i class="bi bi-file-earmark-image-fill"></i>
+                            </div>
+                            <div>
+                                <p class="file-info-name" id="fileInfoName">
+                                    No file loaded
+                                </p>
+                                <p class="file-info-size" id="fileInfoSize">—</p>
+                            </div>
+                        </div>
+
+                        <hr class="divider-line" />
+
+                        <!-- Background Replace -->
+                        <label class="form-label-custom">
+                            Replace Background With
+                        </label>
+                        <div class="bg-options">
+
+                            <div class="bg-option active" onclick="setBgOption('transparent', this)">
+                                <div class="bg-swatch transparent-swatch">
+                                    <i class="bi bi-slash-circle"></i>
+                                </div>
+                                <span>Transparent</span>
+                                <i class="bi bi-check-circle-fill bg-check"></i>
+                            </div>
+
+                            <div class="bg-option" onclick="setBgOption('white', this)">
+                                <div class="bg-swatch white-swatch"></div>
+                                <span>White</span>
+                                <i class="bi bi-check-circle-fill bg-check"></i>
+                            </div>
+
+                            <div class="bg-option" onclick="setBgOption('black', this)">
+                                <div class="bg-swatch black-swatch"></div>
+                                <span>Black</span>
+                                <i class="bi bi-check-circle-fill bg-check"></i>
+                            </div>
+
+                            <div class="bg-option" onclick="setBgOption('color', this)">
+                                <div class="bg-swatch color-swatch" id="colorSwatchPreview">
+                                </div>
+                                <span>Custom Color</span>
+                                <i class="bi bi-check-circle-fill bg-check"></i>
+                            </div>
+
+                        </div>
+
+                        <!-- Custom Color Picker -->
+                        <div class="color-picker-row" id="colorPickerRow" style="display:none">
+                            <label class="form-label-custom">
+                                Pick Color
+                            </label>
+                            <div class="color-picker-wrap">
+                                <input type="color" id="bgColor" value="#3B82F6"
+                                    oninput="updateColorSwatch(this.value)" />
+                                <span id="colorHexVal">#3B82F6</span>
+                            </div>
+                        </div>
+
+                        <hr class="divider-line" />
+
+                        <!-- Output Format -->
+                        <label class="form-label-custom">
+                            Output Format
+                        </label>
+                        <select class="select-custom" id="outputFormat">
+                            <option value="png">PNG (supports transparency)</option>
+                            <option value="jpg">JPG</option>
+                            <option value="webp">WEBP</option>
+                        </select>
+
+                        <hr class="divider-line" />
+
+                        <!-- Edge Refinement -->
+                        <label class="form-label-custom">
+                            Edge Refinement
+                        </label>
+                        <div class="refinement-btns">
+                            <button class="ref-btn" onclick="setRefinement('smooth', this)">
+                                Smooth
+                            </button>
+                            <button class="ref-btn active" onclick="setRefinement('balanced', this)">
+                                Balanced
+                            </button>
+                            <button class="ref-btn" onclick="setRefinement('sharp', this)">
+                                Sharp
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ── Preview Panel ── -->
+                <div class="col-12 col-lg-9">
+                    <div class="preview-card">
+
+                        <!-- Preview Header -->
+                        <div class="preview-header">
+                            <p class="preview-title">Preview</p>
+                            <div class="preview-tabs">
+                                <button class="prev-tab active" onclick="setPreviewTab('original', this)">
+                                    Original
+                                </button>
+                                <button class="prev-tab" onclick="setPreviewTab('result', this)">
+                                    Result
+                                </button>
+                                <button class="prev-tab" onclick="setPreviewTab('compare', this)">
+                                    Compare
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Preview Area -->
+                        <div class="preview-area" id="previewArea">
+
+                            <!-- No image state -->
+                            <div class="no-img-state" id="noImgState">
+                                <i class="bi bi-image"></i>
+                                <p>No image loaded</p>
+                                <span>Upload an image from the home page</span>
+                            </div>
+
+                            <!-- Original tab -->
+                            <div class="preview-tab-content" id="tabOriginal" style="display:none">
+                                <img id="originalImg" src="" alt="Original" class="preview-img" />
+                            </div>
+
+                            <!-- Result tab -->
+                            <div class="preview-tab-content" id="tabResult" style="display:none">
+                                <div class="result-bg" id="resultBg">
+                                    <canvas id="resultCanvas" class="preview-img"></canvas>
+                                </div>
+                                <div class="processing-overlay" id="processingOverlay">
+                                    <div class="mini-spinner"></div>
+                                    <p>Processing...</p>
+                                </div>
+                            </div>
+
+                            <!-- Compare tab -->
+                            <div class="preview-tab-content" id="tabCompare" style="display:none">
+                                <div class="compare-wrap">
+                                    <div class="compare-side">
+                                        <p class="compare-label">Original</p>
+                                        <img id="compareOrigImg" src="" alt="" class="compare-img" />
+                                    </div>
+                                    <div class="compare-divider">
+                                        <i class="bi bi-arrow-left-right"></i>
+                                    </div>
+                                    <div class="compare-side">
+                                        <p class="compare-label">Background Removed</p>
+                                        <canvas id="compareResultCanvas" class="compare-img">
+                                        </canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Status Bar -->
+                        <div class="status-bar" id="statusBar">
+                            <div class="status-icon" id="statusIcon">
+                                <i class="bi bi-image"></i>
+                            </div>
+                            <div>
+                                <p class="status-title" id="statusTitle">
+                                    Ready to process
+                                </p>
+                                <p class="status-sub" id="statusSub">
+                                    Click Process to remove the background
+                                </p>
+                            </div>
+                            <span class="status-badge" id="statusBadge">
+                                Ready
+                            </span>
+                        </div>
+
+                        <!-- Process Button -->
+                        <button class="btn-process" onclick="startProcessing()">
+                            <i class="bi bi-eraser-fill"></i>
+                            Remove Background &amp; Download
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- PROCESSING MODAL -->
+    <div class="modal-overlay" id="processingModal">
+        <div class="modal-box">
+            <div class="spinner-ring"></div>
+            <p class="modal-title-text">Removing Background</p>
+            <p class="modal-sub-text">
+                AI is processing your image...
+            </p>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-box">
+            <a href="/file-tools" class="success-back">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+            <div class="success-circle">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            <p class="success-title">Background Removed!</p>
+            <p class="success-file" id="successFileName">image.png</p>
+            <p class="success-note">
+                Background has been removed successfully
+            </p>
+            <div class="result-summary">
+                <div class="result-summary-item">
+                    <i class="bi bi-file-earmark-image-fill"></i>
+                    <span id="summaryFormat">PNG with transparency</span>
+                </div>
+                <div class="result-summary-item">
+                    <i class="bi bi-layers-fill"></i>
+                    <span id="summaryBg">Transparent background</span>
+                </div>
+            </div>
+            <button class="btn-download" onclick="downloadFile()">
+                <i class="bi bi-cloud-arrow-down-fill"></i>
+                Download Image
+            </button>
+            <button class="btn-process-another" onclick="processAnother()">
+                <i class="bi bi-arrow-clockwise"></i>
+                Remove Another Background
+            </button>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════
+     FOOTER
+════════════════════════════════ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4 g-lg-5">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+                        <span class="footer-brand-name">Vetri Files</span>
+                    </div>
+                    <p class="footer-tagline">Smart file tools for everyone.<br>Process, convert, and edit your files in
+                        seconds.</p>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2 offset-lg-2">
+                    <p class="footer-col-title">Product</p>
+                    <ul class="footer-links">
+                        <li><a href="/all-tools">All Tools</a></li>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">API</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <p class="footer-col-title">All Tools</p>
+                    <ul class="footer-links">
+                        <li><a href="/all-tools">Document Tools</a></li>
+                        <li><a href="/all-tools">Image Tools</a></li>
+                        <li><a href="/all-tools">Audio Tools</a></li>
+                        <li><a href="/all-tools">Video Tools</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <p class="footer-col-title">Legal</p>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                        <li><a href="#">GDPR</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom d-flex flex-column flex-sm-row align-items-center justify-content-between">
+                <p class="footer-copy mb-0">© 2026 Vetri Files. All rights reserved.</p>
+                <div class="social-links mt-3 mt-sm-0">
+                    <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="bi bi-github"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentFile = null;
+        let processedBlob = null;
+        let processedName = 'no-bg.png';
+        let bgOption = 'transparent';
+        let refinement = 'balanced';
+        let customBgColor = '#3B82F6';
+
+        /* ── Init ── */
+        window.addEventListener('DOMContentLoaded', () => {
+            const stored = sessionStorage.getItem('vetri_file');
+            const dataURL = sessionStorage.getItem('vetri_file_data');
+            if (!stored || !dataURL) return;
+            try {
+                currentFile = JSON.parse(stored);
+                loadImagePreview(currentFile, dataURL);
+            } catch (e) { }
+        });
+
+        /* ── Load image preview ── */
+        function loadImagePreview(f, dataURL) {
+            document.getElementById('fileInfoName').textContent =
+                f.name || 'image';
+            document.getElementById('fileInfoSize').textContent =
+                formatSize(f.size);
+            document.getElementById('successFileName').textContent =
+                f.name.replace(/\.[^.]+$/, '') + '.png' || 'image.png';
+            processedName =
+                f.name.replace(/\.[^.]+$/, '') + '_no_bg.png';
+
+            // Set original images
+            document.getElementById('originalImg').src = dataURL;
+            document.getElementById('compareOrigImg').src = dataURL;
+
+            // Show original tab
+            document.getElementById('noImgState').style.display =
+                'none';
+            document.getElementById('tabOriginal').style.display =
+                'flex';
+        }
+
+        /* ── Preview tabs ── */
+        function setPreviewTab(tab, btn) {
+            document.querySelectorAll('.prev-tab')
+                .forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tabOriginal').style.display =
+                tab === 'original' ? 'flex' : 'none';
+            document.getElementById('tabResult').style.display =
+                tab === 'result' ? 'flex' : 'none';
+            document.getElementById('tabCompare').style.display =
+                tab === 'compare' ? 'flex' : 'none';
+        }
+
+        /* ── BG option ── */
+        function setBgOption(option, el) {
+            bgOption = option;
+            document.querySelectorAll('.bg-option')
+                .forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('colorPickerRow').style.display =
+                option === 'color' ? 'block' : 'none';
+            updateResultBg();
+        }
+
+        /* ── Color swatch update ── */
+        function updateColorSwatch(color) {
+            customBgColor = color;
+            document.getElementById('colorSwatchPreview').style.background
+                = color;
+            document.getElementById('colorHexVal').textContent = color;
+            updateResultBg();
+        }
+
+        /* ── Update result bg ── */
+        function updateResultBg() {
+            const resultBg = document.getElementById('resultBg');
+            resultBg.className = 'result-bg';
+            if (bgOption === 'white')
+                resultBg.classList.add('bg-white');
+            else if (bgOption === 'black')
+                resultBg.classList.add('bg-black');
+            else if (bgOption === 'color')
+                resultBg.style.background = customBgColor;
+            else
+                resultBg.style.background = '';
+        }
+
+        /* ── Refinement ── */
+        function setRefinement(level, btn) {
+            refinement = level;
+            document.querySelectorAll('.ref-btn')
+                .forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        /* ── Format size ── */
+        function formatSize(bytes) {
+            if (!bytes) return '—';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024)
+                return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        /* ── Start Processing ── */
+        function startProcessing() {
+            if (!currentFile) {
+                alert('No image found. Please upload from home page.');
+                window.location.href = '/';
+                return;
+            }
+
+            const format =
+                document.getElementById('outputFormat').value;
+
+            // Update summary
+            const bgLabels = {
+                transparent: 'Transparent background',
+                white: 'White background',
+                black: 'Black background',
+                color: 'Custom color: ' + customBgColor
+            };
+            document.getElementById('summaryFormat').textContent =
+                format.toUpperCase() + ' format';
+            document.getElementById('summaryBg').textContent =
+                bgLabels[bgOption];
+
+            processedName = currentFile.name
+                .replace(/\.[^.]+$/, '') + '_no_bg.' + format;
+
+            const processingModal =
+                document.getElementById('processingModal');
+            const progressFill =
+                document.getElementById('progressFill');
+            processingModal.classList.add('show');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 95) {
+                    progress = 95; clearInterval(interval);
+                }
+                progressFill.style.width = progress + '%';
+            }, 400);
+
+            const dataURL = sessionStorage.getItem('vetri_file_data');
+            if (!dataURL) {
+                clearInterval(interval);
+                processingModal.classList.remove('show');
+                alert('File data not found. Please upload again.');
+                window.location.href = '/';
+                return;
+            }
+
+            // ── SPRING BOOT API ──
+            fetch(dataURL)
+                .then(r => r.blob())
+                .then(blob => {
+                    const formData = new FormData();
+                    formData.append('file', blob, currentFile.name);
+                    formData.append('bgOption', bgOption);
+                    formData.append('bgColor', customBgColor);
+                    formData.append('refinement', refinement);
+                    formData.append('format', format);
+                    return fetch('/api/image/remove-background', {
+                        method: 'POST', body: formData
+                    });
+                })
+                .then(r => {
+                    if (!r.ok) throw new Error('Processing failed');
+                    return r.blob();
+                })
+                .then(blob => {
+                    clearInterval(interval);
+                    progressFill.style.width = '100%';
+                    processedBlob = blob;
+
+                    // Show result in preview
+                    const url = URL.createObjectURL(blob);
+                    const canvas =
+                        document.getElementById('resultCanvas');
+                    const img = new Image();
+                    img.onload = () => {
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        URL.revokeObjectURL(url);
+                    };
+                    img.src = url;
+
+                    // Update status
+                    const bar = document.getElementById('statusBar');
+                    const title = document.getElementById('statusTitle');
+                    const sub = document.getElementById('statusSub');
+                    const badge = document.getElementById('statusBadge');
+                    bar.classList.add('done');
+                    title.textContent = 'Background Removed!';
+                    sub.textContent = 'Ready to download';
+                    badge.textContent = 'Done';
+                    badge.classList.add('done');
+
+                    setTimeout(() => {
+                        processingModal.classList.remove('show');
+                        document.getElementById('successModal')
+                            .classList.add('show');
+                    }, 400);
+                })
+                .catch(err => {
+                    clearInterval(interval);
+                    processingModal.classList.remove('show');
+                    alert('Failed: ' + err.message);
+                });
+        }
+
+        /* ── Download ── */
+        function downloadFile() {
+            if (processedBlob) {
+                const url = URL.createObjectURL(processedBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = processedName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        /* ── Process Another ── */
+        function processAnother() {
+            document.getElementById('successModal')
+                .classList.remove('show');
+            document.getElementById('progressFill').style.width = '0%';
+            window.location.href = '/';
+        }
+    </script>
+</body>
+
+</html>

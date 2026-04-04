@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – Vetri Files</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --blue-dark:  #1E3A8A;
+      --blue-main:  #3B82F6;
+      --heading:    #1F2937;
+      --subtext:    #4A5565;
+      --accent-1:   #F3F4F6;
+      --accent-2:   #E5E7EB;
+      --white:      #ffffff;
+      --radius-card:16px;
+      --radius-btn: 50px;
+      --radius-inp: 12px;
+      --error:      #DC2626;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--heading);
+      background: var(--accent-1);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1,h2,h3,h4,h5,.brand-name { font-family: 'Poppins', sans-serif; }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: var(--white);
+      padding: 14px 0;
+      border-bottom: 1px solid var(--accent-2);
+      position: sticky; top: 0; z-index: 1050;
+      box-shadow: 0 1px 8px rgba(0,0,0,.05);
+    }
+    .navbar-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .brand-icon {
+      width:42px; height:42px;
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
+      border-radius:10px; display:flex; align-items:center; justify-content:center;
+    }
+    .brand-icon i { color:#fff; font-size:1.2rem; }
+    .brand-name { font-size:1.15rem; font-weight:700; color:var(--heading); letter-spacing:-.3px; }
+    .navbar-nav .nav-link { font-size:.95rem; font-weight:500; color:var(--heading) !important; padding:6px 14px !important; transition:color .2s; }
+    .navbar-nav .nav-link:hover { color:var(--blue-main) !important; }
+    .btn-get-started {
+      font-family:'Poppins',sans-serif; font-size:.9rem; font-weight:600;
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
+      color:#fff !important; border:none; padding:10px 24px !important;
+      border-radius:var(--radius-btn);
+      box-shadow:0 4px 14px rgba(59,130,246,.35);
+      transition:transform .2s, box-shadow .2s; white-space:nowrap;
+    }
+    .btn-get-started:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(59,130,246,.45); }
+    .navbar-toggler { border:none; padding:4px 8px; }
+    .navbar-toggler:focus { box-shadow:none; }
+    .navbar-toggler-icon {
+      background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%231F2937' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+    @media (max-width:991.98px) {
+      .navbar-collapse { background:var(--white); border-top:1px solid var(--accent-2); padding:12px 0 16px; margin-top:10px; }
+      .navbar-nav { align-items:flex-start !important; padding:0 8px; }
+      .btn-get-started { margin:4px 8px !important; }
+    }
+
+    /* ── Page Wrapper ── */
+    .auth-wrapper {
+      min-height: calc(100vh - 73px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    /* ── Auth Card ── */
+    .auth-card {
+      background: var(--white);
+      border: 1.5px solid var(--accent-2);
+      border-radius: 24px;
+      padding: 44px 40px 40px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 8px 40px rgba(30,58,138,.08);
+    }
+
+    /* ── Logo inside card ── */
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .auth-logo-icon {
+      width: 46px; height: 46px;
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .auth-logo-icon i { color:#fff; font-size:1.3rem; }
+    .auth-logo-name { font-size:1.2rem; font-weight:700; color:var(--heading); }
+
+    /* ── Headings ── */
+    .auth-title {
+      font-size: 1.6rem; font-weight: 800;
+      color: var(--heading); margin-bottom: 6px;
+    }
+    .auth-subtitle {
+      font-size: .9rem; color: var(--subtext);
+      margin-bottom: 32px; line-height: 1.6;
+    }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 18px; }
+
+    .form-label-custom {
+      font-size: .85rem; font-weight: 600;
+      color: var(--heading); margin-bottom: 7px; display: block;
+    }
+
+    .input-wrap { position: relative; }
+
+    .input-icon {
+      position: absolute; left: 14px;
+      top: 50%; transform: translateY(-50%);
+      color: #9CA3AF; font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .input-custom {
+      width: 100%; padding: 13px 14px 13px 42px;
+      font-size: .92rem; font-family: 'Inter', sans-serif;
+      border: 1.5px solid var(--accent-2);
+      border-radius: var(--radius-inp);
+      background: var(--white); color: var(--heading);
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    .input-custom:focus {
+      border-color: var(--blue-main);
+      box-shadow: 0 0 0 4px rgba(59,130,246,.1);
+    }
+    .input-custom.is-invalid {
+      border-color: var(--error);
+      box-shadow: 0 0 0 4px rgba(220,38,38,.08);
+    }
+    .input-custom::placeholder { color: #9CA3AF; }
+
+    /* Password toggle */
+    .btn-toggle-pw {
+      position: absolute; right: 14px;
+      top: 50%; transform: translateY(-50%);
+      background: none; border: none; padding: 0;
+      color: #9CA3AF; font-size: 1rem; cursor: pointer;
+      transition: color .2s;
+    }
+    .btn-toggle-pw:hover { color: var(--blue-main); }
+
+    .invalid-msg {
+      font-size: .78rem; color: var(--error);
+      margin-top: 5px; display: none;
+    }
+    .is-invalid + .invalid-msg,
+    .input-custom.is-invalid ~ .invalid-msg { display: block; }
+
+    /* ── Remember / Forgot ── */
+    .row-remember {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 24px;
+    }
+    .check-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: .85rem; color: var(--subtext); cursor: pointer;
+    }
+    .check-label input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: var(--blue-main); cursor: pointer;
+    }
+    .forgot-link {
+      font-size: .85rem; font-weight: 600;
+      color: var(--blue-main); text-decoration: none; transition: opacity .2s;
+    }
+    .forgot-link:hover { opacity: .75; }
+
+    /* ── Submit Button ── */
+    .btn-auth {
+      width: 100%; padding: 14px;
+      font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
+      color: #fff; border: none; border-radius: var(--radius-inp);
+      box-shadow: 0 4px 18px rgba(59,130,246,.35);
+      transition: transform .2s, box-shadow .2s;
+      cursor: pointer; margin-bottom: 24px;
+    }
+    .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(59,130,246,.45); }
+    .btn-auth:disabled { opacity: .7; cursor: not-allowed; transform: none; }
+
+    /* ── Divider ── */
+    .divider-or {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px;
+    }
+    .divider-or::before, .divider-or::after {
+      content: ''; flex: 1; height: 1px; background: var(--accent-2);
+    }
+    .divider-or span { font-size: .8rem; color: #9CA3AF; white-space: nowrap; }
+
+    /* ── Social Buttons ── */
+    .btn-social {
+      width: 100%; padding: 12px 16px;
+      font-family: 'Inter', sans-serif; font-size: .9rem; font-weight: 600;
+      background: var(--white); color: var(--heading);
+      border: 1.5px solid var(--accent-2); border-radius: var(--radius-inp);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: border-color .2s, box-shadow .2s; cursor: pointer;
+      margin-bottom: 12px; text-decoration: none;
+    }
+    .btn-social:hover {
+      border-color: var(--blue-main);
+      box-shadow: 0 2px 12px rgba(59,130,246,.12);
+      color: var(--heading);
+    }
+    .btn-social img { width: 20px; height: 20px; }
+
+    /* ── Switch Link ── */
+    .switch-auth {
+      text-align: center; font-size: .88rem; color: var(--subtext); margin-top: 8px;
+    }
+    .switch-auth a {
+      font-weight: 700; color: var(--blue-main); text-decoration: none; transition: opacity .2s;
+    }
+    .switch-auth a:hover { opacity: .75; }
+
+    /* ── Alert ── */
+    .auth-alert {
+      background: #FEF2F2; border: 1.5px solid #FECACA;
+      border-radius: 10px; padding: 12px 16px;
+      font-size: .85rem; color: var(--error);
+      margin-bottom: 20px; display: none;
+      align-items: center; gap: 8px;
+    }
+    .auth-alert.show { display: flex; }
+
+    /* ── Success Alert ── */
+    .auth-success {
+      background: #F0FDF4; border: 1.5px solid #BBF7D0;
+      border-radius: 10px; padding: 12px 16px;
+      font-size: .85rem; color: #16A34A;
+      margin-bottom: 20px; display: none;
+      align-items: center; gap: 8px;
+    }
+    .auth-success.show { display: flex; }
+
+    @media (max-width: 575.98px) {
+      .auth-card { padding: 32px 20px 28px; border-radius: 20px; }
+      .auth-title { font-size: 1.35rem; }
+      .row-remember { flex-direction: column; align-items: flex-start; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     NAVBAR
+══════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+      <span class="brand-name">Vetri Files</span>
+    </a>
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#mainNav"
+            aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="/all-tools">Tools</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
+        <a href="/register" class="nav-link btn-get-started">Get Started</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ══════════════════════════════════
+     LOGIN CARD
+══════════════════════════════════ -->
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+      <span class="auth-logo-name">Vetri Files</span>
+    </div>
+
+    <!-- Heading -->
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-subtitle">Sign in to your account to continue</p>
+
+    <!-- Error Alert -->
+    <div class="auth-alert" id="errorAlert">
+      <i class="bi bi-exclamation-circle-fill"></i>
+      <span id="errorMsg">Invalid email or password.</span>
+    </div>
+
+    <!-- Success Alert -->
+    <div class="auth-success" id="successAlert">
+      <i class="bi bi-check-circle-fill"></i>
+      <span>Login successful! Redirecting...</span>
+    </div>
+
+    <!-- Form -->
+    <form id="loginForm" novalidate>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="form-label-custom" for="loginEmail">Email address</label>
+        <div class="input-wrap">
+          <i class="bi bi-envelope input-icon"></i>
+          <input type="email" class="input-custom" id="loginEmail"
+                 placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <p class="invalid-msg" id="emailErr">Please enter a valid email address.</p>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label class="form-label-custom" for="loginPassword">Password</label>
+        <div class="input-wrap">
+          <i class="bi bi-lock input-icon"></i>
+          <input type="password" class="input-custom" id="loginPassword"
+                 placeholder="Enter your password" autocomplete="current-password" />
+          <button type="button" class="btn-toggle-pw" onclick="togglePw('loginPassword', this)">
+            <i class="bi bi-eye"></i>
+          </button>
+        </div>
+        <p class="invalid-msg" id="pwErr">Password is required.</p>
+      </div>
+
+      <!-- Remember / Forgot -->
+      <div class="row-remember">
+        <label class="check-label">
+          <input type="checkbox" id="rememberMe" />
+          Remember me
+        </label>
+        <a href="#" class="forgot-link">Forgot password?</a>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-auth" id="loginBtn">
+        Sign In
+      </button>
+
+    </form>
+
+    <!-- Divider -->
+    <div class="divider-or"><span>or continue with</span></div>
+
+    <!-- Google -->
+    <a href="#" class="btn-social">
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.8 33.6 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8 20-20 0-1.3-.2-2.7-.4-4z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4c-7.7 0-14.4 4.2-17.7 10.7z"/>
+        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.5 35.5 26.9 36 24 36c-5.3 0-9.8-3.4-11.4-8.1l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.2-2.2 4.1-4 5.5l6.2 5.2C41 35.5 44 30.2 44 24c0-1.3-.2-2.7-.4-4z"/>
+      </svg>
+      Continue with Google
+    </a>
+
+    <!-- Switch to Register -->
+    <p class="switch-auth">
+      Don't have an account? <a href="/register">Sign up for free</a>
+    </p>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* ── Toggle password visibility ── */
+  function togglePw(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      icon.className = 'bi bi-eye-slash';
+    } else {
+      inp.type = 'password';
+      icon.className = 'bi bi-eye';
+    }
+  }
+
+  /* ── Form Validation + Submit ── */
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    let valid = true;
+
+    const emailEl = document.getElementById('loginEmail');
+    const pwEl    = document.getElementById('loginPassword');
+    const emailErr= document.getElementById('emailErr');
+    const pwErr   = document.getElementById('pwErr');
+
+    // Reset
+    emailEl.classList.remove('is-invalid');
+    pwEl.classList.remove('is-invalid');
+    emailErr.style.display = 'none';
+    pwErr.style.display    = 'none';
+    document.getElementById('errorAlert').classList.remove('show');
+
+    // Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailEl.value.trim() || !emailRegex.test(emailEl.value.trim())) {
+      emailEl.classList.add('is-invalid');
+      emailErr.style.display = 'block';
+      valid = false;
+    }
+
+    // Password
+    if (!pwEl.value.trim()) {
+      pwEl.classList.add('is-invalid');
+      pwErr.style.display = 'block';
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    // Submit
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
+
+    /* ── SPRING BOOT API CALL (uncomment when backend ready) ──
+    fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: emailEl.value.trim(),
+        password: pwEl.value,
+        rememberMe: document.getElementById('rememberMe').checked
+      })
+    })
+    .then(r => {
+      if (!r.ok) throw new Error('Invalid credentials');
+      return r.json();
+    })
+    .then(data => {
+      sessionStorage.setItem('vetri_token', data.token);
+      sessionStorage.setItem('vetri_user', JSON.stringify(data.user));
+      document.getElementById('successAlert').classList.add('show');
+      setTimeout(() => window.location.href = 'index.html', 1200);
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = 'Sign In';
+      document.getElementById('errorMsg').textContent = 'Invalid email or password. Please try again.';
+      document.getElementById('errorAlert').classList.add('show');
+    });
+    ── END SPRING BOOT SECTION ── */
+
+    // SIMULATED (remove when backend ready)
+    setTimeout(() => {
+      document.getElementById('successAlert').classList.add('show');
+      btn.innerHTML = 'Sign In';
+      setTimeout(() => window.location.href = '/', 1200);
+    }, 1500);
+  });
+
+  /* ── Clear errors on input ── */
+  ['loginEmail','loginPassword'].forEach(id => {
+    document.getElementById(id).addEventListener('input', function() {
+      this.classList.remove('is-invalid');
+      document.getElementById('errorAlert').classList.remove('show');
+    });
+  });
+</script>
+</body>
+</html>
