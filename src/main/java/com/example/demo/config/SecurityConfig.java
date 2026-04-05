@@ -1,6 +1,7 @@
 package com.example.demo.config;
 
-import com.example.demo.security.JwtFilter;
+import com.example.demo.security.JwtAuthFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,64 +17,54 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
+    private final JwtAuthFilter jwtAuthFilter;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+
             .authorizeHttpRequests(auth -> auth
+                // Static files — always public
                 .requestMatchers(
-                    // ── Pages ──────────────────
-                    "/",
-                    "/index",
-                    "/all-tools",
-                    "/file-tools",
-                    "/login",
-                    "/register",
-                    "/tool-convert-pdf",
-                    "/tool-compress-pdf",
-                    "/tool-lock-pdf",
-                    "/tool-unlock-pdf",
-                    "/tool-merge-pdf",
-                    "/tool-split-pdf",
-                    "/tool-convert-image",
-                    "/tool-crop-image",
-                    "/tool-resize-image",
-                    "/tool-watermark-image",
-                    "/tool-merge-images",
-                    "/tool-compress-image",
-                    "/tool-convert-audio",
-                    "/tool-trim-audio",
-                    "/tool-merge-audio",
-                    "/tool-extract-audio",
-                    "/tool-convert-video",
-                    "/tool-trim-video",
-                    "/tool-merge-videos",
-                    "/tool-extract-audio-video",
-                    // ── API ────────────────────
-                    "/api/auth/**",
-                    "/api/pdf/**",
-                    "/api/image/**",
-                    "/api/audio/**",
-                    "/api/video/**",
-                    // ── Static files ───────────
-                    "/static/**",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
-                    "/webjars/**",
-                    "/**"
+                    "/css/**", "/js/**", "/images/**",
+                    "/fonts/**", "/webjars/**", "/favicon.ico"
                 ).permitAll()
+
+                // Auth pages — public
+                .requestMatchers("/login", "/register").permitAll()
+
+                // Auth API — public
+                .requestMatchers(
+                    "/api/auth/login",
+                    "/api/auth/register",
+                    "/api/auth/logout"
+                ).permitAll()
+
+                // Everything else — must be logged in
                 .anyRequest().authenticated()
             )
+
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
-            .addFilterBefore(
-                jwtFilter,
-                UsernamePasswordAuthenticationFilter.class
-            );
+
+            // ── KEY FIX: tell Spring what to do when not authenticated ──
+            // For page requests → redirect to /login
+            // For API requests → return 401 JSON
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    String path = request.getServletPath();
+                    if (path.startsWith("/api/")) {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"success\":false,\"message\":\"Unauthorized\"}");
+                    } else {
+                        response.sendRedirect("/login");
+                    }
+                })
+            )
+
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

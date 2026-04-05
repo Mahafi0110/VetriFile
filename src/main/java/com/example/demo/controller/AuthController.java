@@ -5,6 +5,8 @@ import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.service.AuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,33 +20,52 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // ── REGISTER ──────────────────────────────
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(
-            @Valid @RequestBody RegisterRequest request) {
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletResponse response
+    ) {
         try {
-            AuthResponse response = authService.register(request);
-            return ResponseEntity.ok(
-                ApiResponse.success("Registration successful!", response)
-            );
+            AuthResponse authResponse = authService.register(request);
+            setJwtCookie(response, authResponse.getToken(), 7 * 24 * 60 * 60);
+            return ResponseEntity.ok(ApiResponse.success("Registration successful!", authResponse));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         }
     }
 
-    // ── LOGIN ─────────────────────────────────
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(
-            @Valid @RequestBody LoginRequest request) {
+            @Valid @RequestBody LoginRequest request,
+            HttpServletResponse response
+    ) {
         try {
-            AuthResponse response = authService.login(request);
-            return ResponseEntity.ok(
-                ApiResponse.success("Login successful!", response)
-            );
+            AuthResponse authResponse = authService.login(request);
+            int maxAge = request.isRememberMe() ? 30 * 24 * 60 * 60 : -1;
+            setJwtCookie(response, authResponse.getToken(), maxAge);
+            return ResponseEntity.ok(ApiResponse.success("Login successful!", authResponse));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error(e.getMessage()));
+                    .body(ApiResponse.error(e.getMessage()));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("vetri_token", "");
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        return ResponseEntity.ok(ApiResponse.success("Logged out successfully", null));
+    }
+
+    private void setJwtCookie(HttpServletResponse response, String token, int maxAge) {
+        Cookie cookie = new Cookie("vetri_token", token);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+        response.addCookie(cookie);
     }
 }

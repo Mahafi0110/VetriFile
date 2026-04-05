@@ -1429,15 +1429,43 @@
   });
 
   /* ── Load video ── */
-  function loadVideo() {
-    videoEl = document.getElementById('videoEl');
-    getFileObjectURL(url => {
-      videoEl.src = url;
-      videoEl.style.display = 'block';
-      document.getElementById('noVideoState')
-        .style.display = 'none';
-    });
-  }
+function loadVideo() {
+  videoEl = document.getElementById('videoEl');
+
+  getFileObjectURL(function(url) {
+
+    if (!url) {
+      // url is null — storageType missing or file lost
+      // Show a helpful message instead of blank screen
+      document.getElementById('noVideoState').innerHTML = `
+        <i class="bi bi-exclamation-circle" style="color:#F59E0B"></i>
+        <p style="color:#F59E0B">Video not found</p>
+        <span>Please go back and upload your video again</span>
+        <br><br>
+        <a href="/" style="
+          display:inline-block;
+          margin-top:8px;
+          padding:10px 24px;
+          background:linear-gradient(135deg,#DB2777,#F472B6);
+          color:#fff;
+          border-radius:50px;
+          text-decoration:none;
+          font-weight:600;
+          font-size:.88rem;
+        ">Upload Video</a>
+      `;
+      return;
+    }
+
+    // url is valid — set it and show the video
+    videoEl.src = url;
+    videoEl.style.display = 'block';
+    document.getElementById('noVideoState').style.display = 'none';
+
+    // Also force load in case browser needs a nudge
+    videoEl.load();
+  });
+}
 
   /* ── Video loaded metadata ── */
   function onVideoLoaded() {

@@ -1,12 +1,17 @@
 package com.example.demo.controller;
 
 import org.springframework.stereotype.Controller;
+
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class PageController {
 
-    // ── Main Pages ────────────────────────────
+    // ══════════════════════════════════════════════════
+    // MAIN PAGES
+    // ══════════════════════════════════════════════════
+
     @GetMapping("/")
     public String index() {
         return "index";
@@ -14,7 +19,7 @@ public class PageController {
 
     @GetMapping("/index")
     public String indexAlt() {
-        return "index";
+        return "redirect:/";
     }
 
     @GetMapping("/all-tools")
@@ -25,6 +30,10 @@ public class PageController {
     @GetMapping("/file-tools")
     public String fileTools() {
         return "file-tools";
+    }
+     @GetMapping("/Feature")
+    public String Feature() {
+        return "Feature";
     }
 
     @GetMapping("/login")
@@ -37,15 +46,35 @@ public class PageController {
         return "register";
     }
 
-    // ── PDF Tool Pages ────────────────────────
+    @GetMapping("/favicon.ico")
+    @ResponseBody
+    public void favicon() {
+        // stops the 500 error silently
+    }
+
+    // ══════════════════════════════════════════════════
+    // PDF TOOL PAGES
+    // ══════════════════════════════════════════════════
+
     @GetMapping("/tool-convert-pdf")
     public String toolConvertPdf() {
         return "tool-convert-pdf";
     }
+
     @GetMapping("/tool-compress-pdf")
-public String toolCompressPdf() {
-    return "tool-compress-pdf"; // now has its own page!
-}
+    public String toolCompressPdf() {
+        return "tool-compress-pdf";
+    }
+
+    @GetMapping("/tool-merge-pdf")
+    public String toolMergePdf() {
+        return "tool-merge-pdf";
+    }
+
+    @GetMapping("/tool-split-pdf")
+    public String toolSplitPdf() {
+        return "tool-split-pdf";
+    }
 
     @GetMapping("/tool-add-signature")
     public String toolAddSignature() {
@@ -61,31 +90,14 @@ public String toolCompressPdf() {
     public String toolUnlockPdf() {
         return "tool-unlock-pdf";
     }
-    
-    @GetMapping("/tool-remove-background")
-    public String toolRemoveBackground() {
-        return "tool-remove-background";
-    }
 
-    @GetMapping("/tool-merge-pdf")
-    public String toolMergePdf() {
-        return "tool-merge-pdf";
-    }
+    // ══════════════════════════════════════════════════
+    // IMAGE TOOL PAGES
+    // ══════════════════════════════════════════════════
 
-    // @GetMapping("/tool-compress-pdf")
-    // public String toolCompressPdf() {
-    //     return "tool-convert-pdf";
-    // }
-
-    @GetMapping("/tool-split-pdf")
-    public String toolSplitPdf() {
-        return "tool-split-pdf";
-    }
-
-    // ── Image Tool Pages ──────────────────────
     @GetMapping("/tool-convert-image")
     public String toolConvertImage() {
-        return "tool-convert-pdf";
+        return "tool-convert-image";
     }
 
     @GetMapping("/tool-crop-image")
@@ -98,6 +110,11 @@ public String toolCompressPdf() {
         return "tool-resize-image";
     }
 
+    @GetMapping("/tool-compress-image")
+    public String toolCompressImage() {
+        return "tool-compress-image";
+    }
+
     @GetMapping("/tool-watermark-image")
     public String toolWatermarkImage() {
         return "tool-watermark-image";
@@ -105,18 +122,21 @@ public String toolCompressPdf() {
 
     @GetMapping("/tool-merge-images")
     public String toolMergeImages() {
-        return "tool-convert-pdf";
+        return "tool-merge-images";
     }
 
-    @GetMapping("/tool-compress-image")
-    public String toolCompressImage() {
-        return "tool-compress-image";
+    @GetMapping("/tool-remove-background")
+    public String toolRemoveBackground() {
+        return "tool-remove-background";
     }
 
-    // ── Audio Tool Pages ──────────────────────
+    // ══════════════════════════════════════════════════
+    // AUDIO TOOL PAGES
+    // ══════════════════════════════════════════════════
+
     @GetMapping("/tool-convert-audio")
     public String toolConvertAudio() {
-        return "tool-compress-audio";
+        return "tool-convert-audio";
     }
 
     @GetMapping("/tool-trim-audio")
@@ -129,12 +149,20 @@ public String toolCompressPdf() {
         return "tool-merge-audio";
     }
 
-    @GetMapping("/tool-extract-audio")
-    public String toolExtractAudio() {
-        return "tool-convert-pdf";
+    @GetMapping("/tool-compress-audio")
+    public String toolCompressAudio() {
+        return "tool-compress-audio";
     }
 
-    // ── Video Tool Pages ──────────────────────
+    @GetMapping("/tool-extract-audio")
+    public String toolExtractAudio() {
+        return "tool-extract-audio";
+    }
+
+    // ══════════════════════════════════════════════════
+    // VIDEO TOOL PAGES
+    // ══════════════════════════════════════════════════
+
     @GetMapping("/tool-compress-video")
     public String toolCompressVideo() {
         return "tool-compress-video";
@@ -145,13 +173,13 @@ public String toolCompressPdf() {
         return "tool-trim-video";
     }
 
+    @GetMapping("/tool-merge-videos")
+    public String toolMergeVideos() {
+        return "tool-merge-videos";
+    }
+
     @GetMapping("/tool-extract-audio-video")
     public String toolExtractAudioVideo() {
         return "tool-extract-audio-video";
-    }
-
-    @GetMapping("/tool-merge-videos")
-    public String toolMergeVideos() {
-        return "tool-convert-pdf";
     }
 }

@@ -5,18 +5,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vetri Files – Smart File Tools for Every File Type</title>
-
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
-    <!-- Google Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet" />
 
     <style>
-        /* ─── CSS Variables ─────────────────────────────────── */
+        /* ─── CSS Variables ─── */
         :root {
             --blue-dark: #1E3A8A;
             --blue-main: #3B82F6;
@@ -31,7 +27,6 @@
             --shadow-hover: 0 8px 32px rgba(59, 130, 246, .15);
         }
 
-        /* ─── Base ──────────────────────────────────────────── */
         *,
         *::before,
         *::after {
@@ -54,7 +49,7 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        /* ─── Navbar ────────────────────────────────────────── */
+        /* ─── Navbar ─── */
         .navbar {
             background: var(--white);
             padding: 14px 0;
@@ -95,7 +90,6 @@
         }
 
         .navbar-nav .nav-link {
-            font-family: 'Inter', sans-serif;
             font-size: .95rem;
             font-weight: 500;
             color: var(--heading) !important;
@@ -108,7 +102,6 @@
         }
 
         .btn-login {
-            font-family: 'Inter', sans-serif;
             font-size: .9rem;
             font-weight: 500;
             color: var(--blue-main) !important;
@@ -140,6 +133,184 @@
             box-shadow: 0 6px 20px rgba(59, 130, 246, .45);
         }
 
+        /* ─── Profile Button & Dropdown ─── */
+        .btn-profile-toggle {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            background: var(--accent-1);
+            border: 1.5px solid var(--accent-2);
+            border-radius: var(--radius-btn);
+            padding: 6px 14px 6px 6px;
+            cursor: pointer;
+            transition: border-color .2s, box-shadow .2s;
+            font-family: 'Inter', sans-serif;
+            font-size: .88rem;
+            font-weight: 600;
+            color: var(--heading);
+        }
+
+        .btn-profile-toggle:hover {
+            border-color: var(--blue-main);
+            box-shadow: 0 2px 10px rgba(59, 130, 246, .15);
+        }
+
+        .profile-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
+            color: #fff;
+            font-size: .8rem;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .profile-name {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chevron-icon {
+            font-size: .7rem;
+            color: var(--subtext);
+        }
+
+        .profile-menu {
+            border: 1.5px solid var(--accent-2);
+            border-radius: 16px;
+            box-shadow: 0 16px 48px rgba(30, 58, 138, .12);
+            padding: 8px;
+            min-width: 240px;
+            margin-top: 8px !important;
+        }
+
+        .profile-menu-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 10px 14px;
+            border-bottom: none;
+        }
+
+        .profile-avatar-lg {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue-dark), var(--blue-main));
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .profile-menu-name {
+            font-weight: 700;
+            font-size: .92rem;
+            color: var(--heading);
+        }
+
+        .profile-menu-email {
+            font-size: .78rem;
+            color: var(--subtext);
+            margin-top: 2px;
+        }
+
+        .dropdown-divider {
+            margin: 4px 0;
+            border-color: var(--accent-2);
+        }
+
+        .profile-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: .88rem;
+            font-weight: 500;
+            color: var(--heading) !important;
+            padding: 10px 12px;
+            border-radius: 10px;
+            transition: background .15s;
+        }
+
+        .profile-item:hover {
+            background: var(--accent-1);
+            color: var(--heading) !important;
+        }
+
+        .profile-item i {
+            font-size: 1rem;
+            width: 18px;
+            text-align: center;
+            color: var(--subtext);
+        }
+
+        .profile-item.text-danger {
+            color: #DC2626 !important;
+        }
+
+        .profile-item.text-danger i {
+            color: #DC2626;
+        }
+
+        .profile-item.text-danger:hover {
+            background: #FEF2F2;
+        }
+
+        /* Welcome Banner (shown when logged in) */
+        .welcome-banner {
+            background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-main) 100%);
+            color: #fff;
+            padding: 14px 0;
+            display: none;
+        }
+
+        .welcome-banner.show {
+            display: block;
+        }
+
+        .welcome-banner-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .welcome-text {
+            font-size: .92rem;
+            font-weight: 500;
+        }
+
+        .welcome-text strong {
+            font-weight: 700;
+        }
+
+        .btn-dismiss {
+            background: rgba(255, 255, 255, .2);
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            padding: 4px 12px;
+            font-size: .82rem;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .btn-dismiss:hover {
+            background: rgba(255, 255, 255, .35);
+        }
+
         /* Hamburger */
         .navbar-toggler {
             border: none;
@@ -154,8 +325,7 @@
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%231F2937' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
 
-        /* Mobile nav dropdown */
-        @media (max-width: 991.98px) {
+        @media (max-width:991.98px) {
             .navbar-collapse {
                 background: var(--white);
                 border-top: 1px solid var(--accent-2);
@@ -173,12 +343,12 @@
                 margin: 4px 8px !important;
             }
 
-            .btn-get-started {
-                display: inline-block;
+            .btn-profile-toggle {
+                margin: 4px 8px !important;
             }
         }
 
-        /* ─── Hero Section ──────────────────────────────────── */
+        /* ─── Hero ─── */
         .hero-section {
             background: var(--accent-1);
             padding: 72px 0 56px;
@@ -209,7 +379,7 @@
             line-height: 1.7;
         }
 
-        /* ─── Upload Card ───────────────────────────────────── */
+        /* ─── Upload Card ─── */
         .upload-card {
             background: linear-gradient(145deg, #e8ecf1 0%, #d5dce8 100%);
             border-radius: var(--radius-card);
@@ -291,7 +461,7 @@
             display: none;
         }
 
-        /* ─── Category Pills ────────────────────────────────── */
+        /* ─── Category Pills ─── */
         .category-pills {
             display: flex;
             flex-wrap: wrap;
@@ -360,7 +530,7 @@
             color: #EA580C;
         }
 
-        /* ─── How It Works ──────────────────────────────────── */
+        /* ─── How It Works ─── */
         .how-section {
             padding: 80px 0 72px;
             background: var(--white);
@@ -452,11 +622,7 @@
             margin-bottom: 0;
         }
 
-        .step-divider {
-            display: none;
-        }
-
-        @media (min-width: 992px) {
+        @media (min-width:992px) {
             .step-divider {
                 display: block;
                 position: absolute;
@@ -470,7 +636,7 @@
             }
         }
 
-        /* ─── Why Choose Section ────────────────────────────── */
+        /* ─── Why Choose ─── */
         .why-section {
             background: var(--accent-1);
             padding: 80px 0 72px;
@@ -532,7 +698,7 @@
             margin-bottom: 0;
         }
 
-        /* ─── Footer ────────────────────────────────────────── */
+        /* ─── Footer ─── */
         .footer {
             background: var(--white);
             border-top: 1px solid var(--accent-2);
@@ -617,8 +783,7 @@
             background: #EFF6FF;
         }
 
-        /* ─── Responsive Tweaks ─────────────────────────────── */
-        @media (max-width: 767.98px) {
+        @media (max-width:767.98px) {
             .hero-section {
                 padding: 48px 0 40px;
             }
@@ -650,65 +815,28 @@
                 margin-bottom: 24px;
             }
         }
-
-        @media (max-width: 575.98px) {
-            .cat-pill {
-                font-size: .8rem;
-                padding: 8px 14px;
-            }
-
-            .section-title {
-                font-size: 1.5rem;
-            }
-        }
     </style>
 </head>
 
 <body>
 
-    <!-- ═══════════════════════════════════════════════════════════
-     NAVBAR
-════════════════════════════════════════════════════════════ -->
-    <nav class="navbar navbar-expand-lg">
+    <!-- ── Nav Container (rendered by auth.js) ── -->
+    <div id="navbarContainer"></div>
+
+    <!-- ── Welcome Banner ── -->
+    <div class="welcome-banner" id="welcomeBanner">
         <div class="container">
-
-            <!-- Brand -->
-            <a class="navbar-brand" href="index.html">
-                <div class="brand-icon">
-                    <i class="bi bi-file-earmark-text-fill"></i>
-                </div>
-                <span class="brand-name">Vetri Files</span>
-            </a>
-
-            <!-- Hamburger -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <!-- Links -->
-            <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">Tools</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
-                </ul>
-                <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
-                    <a href="login.html" class="nav-link btn-login">Login</a>
-                    <a href="register.html" class="nav-link btn-get-started">Get Started</a>
-                </div>
+            <div class="welcome-banner-inner">
+                <span class="welcome-text" id="welcomeText">👋 Welcome back! You're signed in.</span>
+                <button class="btn-dismiss"
+                    onclick="document.getElementById('welcomeBanner').classList.remove('show')">Dismiss</button>
             </div>
-
         </div>
-    </nav>
+    </div>
 
-
-    <!-- ═══════════════════════════════════════════════════════════
-     HERO / UPLOAD SECTION
-════════════════════════════════════════════════════════════ -->
+    <!-- ── Hero / Upload Section ── -->
     <section class="hero-section">
         <div class="container">
-
-            <!-- Heading -->
             <h1 class="hero-title">
                 Smart File Tools for
                 <span class="hero-title-gradient">Every File Type</span>
@@ -718,210 +846,144 @@
                 Convert, edit, and enhance your files in seconds.
             </p>
 
-            <!-- Upload Card -->
             <div class="upload-card" id="uploadCard">
                 <input type="file" id="fileInput" multiple />
-                <div class="upload-icon-circle">
-                    <i class="bi bi-cloud-arrow-up-fill"></i>
-                </div>
+                <div class="upload-icon-circle"><i class="bi bi-cloud-arrow-up-fill"></i></div>
                 <p class="upload-title">Drag &amp; Drop Your File</p>
                 <p class="upload-sub">or click to browse from your device</p>
-                <button class="btn btn-choose-file" onclick="document.getElementById('fileInput').click()">
-                    Choose File
-                </button>
+                <button class="btn btn-choose-file" onclick="document.getElementById('fileInput').click()">Choose
+                    File</button>
             </div>
 
-            <!-- Category Pills -->
             <div class="category-pills">
                 <a href="#" class="cat-pill active">
-                    <span class="pill-icon pill-doc"><i class="bi bi-file-earmark-text"></i></span>
-                    Documents
+                    <span class="pill-icon pill-doc"><i class="bi bi-file-earmark-text"></i></span>Documents
                 </a>
                 <a href="#" class="cat-pill">
-                    <span class="pill-icon pill-img"><i class="bi bi-image"></i></span>
-                    Images
+                    <span class="pill-icon pill-img"><i class="bi bi-image"></i></span>Images
                 </a>
                 <a href="#" class="cat-pill">
-                    <span class="pill-icon pill-audio"><i class="bi bi-music-note-beamed"></i></span>
-                    Audio
+                    <span class="pill-icon pill-audio"><i class="bi bi-music-note-beamed"></i></span>Audio
                 </a>
                 <a href="#" class="cat-pill">
-                    <span class="pill-icon pill-video"><i class="bi bi-camera-video"></i></span>
-                    Video
+                    <span class="pill-icon pill-video"><i class="bi bi-camera-video"></i></span>Video
                 </a>
                 <a href="#" class="cat-pill">
-                    <span class="pill-icon pill-arch"><i class="bi bi-file-zip"></i></span>
-                    Archives
+                    <span class="pill-icon pill-arch"><i class="bi bi-file-zip"></i></span>Archives
                 </a>
             </div>
-
         </div>
     </section>
 
-
-    <!-- ═══════════════════════════════════════════════════════════
-     HOW IT WORKS
-════════════════════════════════════════════════════════════ -->
+    <!-- ── How It Works ── -->
     <section class="how-section">
         <div class="container">
-
-            <!-- Header -->
             <div class="text-center mb-5">
                 <h2 class="section-title">How It Works</h2>
                 <p class="section-sub">Three simple steps to process any file</p>
             </div>
-
-            <!-- Steps -->
             <div class="row g-4 justify-content-center">
-
-                <!-- Step 1 -->
                 <div class="col-12 col-md-6 col-lg-4 position-relative">
                     <div class="step-card">
                         <div class="step-badge">1</div>
-                        <div class="step-icon-box blue">
-                            <i class="bi bi-cloud-arrow-up-fill"></i>
-                        </div>
+                        <div class="step-icon-box blue"><i class="bi bi-cloud-arrow-up-fill"></i></div>
                         <h5>Upload Your File</h5>
                         <p>Drag and drop or select any file from your device. We support all major file formats.</p>
                     </div>
                     <div class="step-divider"></div>
                 </div>
-
-                <!-- Step 2 -->
                 <div class="col-12 col-md-6 col-lg-4 position-relative">
                     <div class="step-card">
                         <div class="step-badge">2</div>
-                        <div class="step-icon-box teal">
-                            <i class="bi bi-magic"></i>
-                        </div>
+                        <div class="step-icon-box teal"><i class="bi bi-magic"></i></div>
                         <h5>Choose Your Tool</h5>
                         <p>Select from intelligent tool suggestions based on your file type and needs.</p>
                     </div>
                     <div class="step-divider"></div>
                 </div>
-
-                <!-- Step 3 -->
                 <div class="col-12 col-md-6 col-lg-4">
                     <div class="step-card">
                         <div class="step-badge">3</div>
-                        <div class="step-icon-box purple">
-                            <i class="bi bi-cloud-arrow-down-fill"></i>
-                        </div>
+                        <div class="step-icon-box purple"><i class="bi bi-cloud-arrow-down-fill"></i></div>
                         <h5>Download Result</h5>
                         <p>Process your file securely and download the result in seconds. Simple as that!</p>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-
-    <!-- ═══════════════════════════════════════════════════════════
-     WHY CHOOSE VETRI FILES
-════════════════════════════════════════════════════════════ -->
+    <!-- ── Why Choose ── -->
     <section class="why-section">
         <div class="container">
-
-            <!-- Header -->
             <div class="text-center mb-5">
                 <h2 class="section-title">Why Choose Vetri Files?</h2>
                 <p class="section-sub">The smartest way to work with your files</p>
             </div>
-
-            <!-- Feature Cards -->
             <div class="row g-4">
-
                 <div class="col-12 col-sm-6 col-lg-3">
                     <div class="feature-card">
-                        <div class="feature-icon-box fi-green">
-                            <i class="bi bi-shield-fill-check"></i>
-                        </div>
+                        <div class="feature-icon-box fi-green"><i class="bi bi-shield-fill-check"></i></div>
                         <h5>Secure &amp; Private</h5>
                         <p>All files are processed securely with end-to-end encryption. Your privacy is our priority.
                         </p>
                     </div>
                 </div>
-
                 <div class="col-12 col-sm-6 col-lg-3">
                     <div class="feature-card">
-                        <div class="feature-icon-box fi-orange">
-                            <i class="bi bi-lightning-charge-fill"></i>
-                        </div>
+                        <div class="feature-icon-box fi-orange"><i class="bi bi-lightning-charge-fill"></i></div>
                         <h5>Lightning Fast</h5>
                         <p>Process files in seconds with our optimized infrastructure. No waiting, no hassle.</p>
                     </div>
                 </div>
-
                 <div class="col-12 col-sm-6 col-lg-3">
                     <div class="feature-card">
-                        <div class="feature-icon-box fi-blue">
-                            <i class="bi bi-currency-dollar"></i>
-                        </div>
+                        <div class="feature-icon-box fi-blue"><i class="bi bi-currency-dollar"></i></div>
                         <h5>Free to Use</h5>
                         <p>All tools are completely free with no hidden fees. Process unlimited files anytime.</p>
                     </div>
                 </div>
-
                 <div class="col-12 col-sm-6 col-lg-3">
                     <div class="feature-card">
-                        <div class="feature-icon-box fi-purple">
-                            <i class="bi bi-grid-3x3-gap-fill"></i>
-                        </div>
+                        <div class="feature-icon-box fi-purple"><i class="bi bi-grid-3x3-gap-fill"></i></div>
                         <h5>Multi-Format Support</h5>
                         <p>Support for images, documents, audio, video, and more. One platform for all your needs.</p>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-
-    <!-- ═══════════════════════════════════════════════════════════
-     FOOTER
-════════════════════════════════════════════════════════════ -->
+    <!-- ── Footer ── -->
     <footer class="footer">
         <div class="container">
             <div class="row g-4 g-lg-5">
-
-                <!-- Brand Column -->
                 <div class="col-12 col-md-6 col-lg-4">
                     <div class="d-flex align-items-center gap-2 mb-3">
-                        <div class="brand-icon">
-                            <i class="bi bi-file-earmark-text-fill"></i>
-                        </div>
+                        <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
                         <span class="footer-brand-name">Vetri Files</span>
                     </div>
-                    <p class="footer-tagline">
-                        Smart file tools for everyone.<br>
-                        Process, convert, and edit your files in seconds.
-                    </p>
+                    <p class="footer-tagline">Smart file tools for everyone.<br>Process, convert, and edit your files in
+                        seconds.</p>
                 </div>
-
-                <!-- Product -->
                 <div class="col-6 col-md-3 col-lg-2 offset-lg-2">
                     <p class="footer-col-title">Product</p>
                     <ul class="footer-links">
-                        <li><a href="#">All Tools</a></li>
+                        <li><a href="/all-tools">All Tools</a></li>
                         <li><a href="#">Features</a></li>
                         <li><a href="#">Pricing</a></li>
                         <li><a href="#">API</a></li>
                     </ul>
                 </div>
-
-                <!-- All Tools -->
                 <div class="col-6 col-md-3 col-lg-2">
                     <p class="footer-col-title">All Tools</p>
                     <ul class="footer-links">
-                        <li><a href="#">Document Tools</a></li>
-                        <li><a href="#">Image Tools</a></li>
-                        <li><a href="#">Audio Tools</a></li>
-                        <li><a href="#">Video Tools</a></li>
+                        <li><a href="/all-tools">Document Tools</a></li>
+                        <li><a href="/all-tools">Image Tools</a></li>
+                        <li><a href="/all-tools">Audio Tools</a></li>
+                        <li><a href="/all-tools">Video Tools</a></li>
                     </ul>
                 </div>
-
-                <!-- Legal -->
                 <div class="col-6 col-md-3 col-lg-2">
                     <p class="footer-col-title">Legal</p>
                     <ul class="footer-links">
@@ -931,10 +993,7 @@
                         <li><a href="#">GDPR</a></li>
                     </ul>
                 </div>
-
             </div>
-
-            <!-- Footer Bottom -->
             <div class="footer-bottom d-flex flex-column flex-sm-row align-items-center justify-content-between">
                 <p class="footer-copy mb-0">© 2026 Vetri Files. All rights reserved.</p>
                 <div class="social-links mt-3 mt-sm-0">
@@ -946,121 +1005,64 @@
         </div>
     </footer>
 
-
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script src="/auth.js"></script>
     <script>
+        /* ── Render navbar with auth state ── */
+        VetriAuth.renderNavbar('navbarContainer');
+
+        /* ── Welcome banner for newly logged-in users ── */
+        const user = VetriAuth.getUser();
+        if (VetriAuth.isLoggedIn() && user) {
+            const name = user.name ? user.name.split(' ')[0] : user.email;
+            const isNewLogin = sessionStorage.getItem('vetri_just_logged_in');
+            if (isNewLogin) {
+                document.getElementById('welcomeText').innerHTML = `👋 Welcome back, <strong>${name}</strong>! You're signed in.`;
+                document.getElementById('welcomeBanner').classList.add('show');
+                sessionStorage.removeItem('vetri_just_logged_in');
+            }
+        }
+
         /* ── Drag & Drop ── */
         const card = document.getElementById('uploadCard');
         const input = document.getElementById('fileInput');
-
-        ['dragenter', 'dragover'].forEach(e => {
-            card.addEventListener(e, ev => { ev.preventDefault(); card.classList.add('drag-over'); });
-        });
-        ['dragleave', 'drop'].forEach(e => {
-            card.addEventListener(e, ev => { ev.preventDefault(); card.classList.remove('drag-over'); });
-        });
-        card.addEventListener('drop', ev => {
-            const files = ev.dataTransfer.files;
-            if (files.length) handleFiles(files);
-        });
-        card.addEventListener('click', e => {
-            if (e.target.closest('.btn-choose-file')) return;
-            input.click();
-        });
+        ['dragenter', 'dragover'].forEach(e => card.addEventListener(e, ev => { ev.preventDefault(); card.classList.add('drag-over'); }));
+        ['dragleave', 'drop'].forEach(e => card.addEventListener(e, ev => { ev.preventDefault(); card.classList.remove('drag-over'); }));
+        card.addEventListener('drop', ev => { if (ev.dataTransfer.files.length) handleFiles(ev.dataTransfer.files); });
+        card.addEventListener('click', e => { if (e.target.closest('.btn-choose-file')) return; input.click(); });
         input.addEventListener('change', () => handleFiles(input.files));
 
         function handleFiles(files) {
             if (!files.length) return;
             const file = files[0];
-
-            // Store metadata
-            const meta = {
-                name: file.name,
-                size: file.size,
-                type: file.type
-            };
-            sessionStorage.setItem('vetri_file', JSON.stringify(meta));
-
-            // ── File size check ──
-            const MAX_SESSION_SIZE = 10 * 1024 * 1024; // 10MB limit for sessionStorage
-
-            if (file.size > MAX_SESSION_SIZE) {
-                // Large file — store in IndexedDB instead
-                storeInIndexedDB(file, () => {
-                    sessionStorage.setItem('vetri_storage_type', 'indexeddb');
-                    window.location.href = '/file-tools';
-                });
+            sessionStorage.setItem('vetri_file', JSON.stringify({ name: file.name, size: file.size, type: file.type }));
+            const MAX = 10 * 1024 * 1024;
+            if (file.size > MAX) {
+                storeInIndexedDB(file, () => { sessionStorage.setItem('vetri_storage_type', 'indexeddb'); window.location.href = '/file-tools'; });
             } else {
-                // Small file — store as dataURL in sessionStorage
-                const reader = new FileReader();
-                reader.onload = e => {
-                    sessionStorage.setItem('vetri_file_data', e.target.result);
-                    sessionStorage.setItem('vetri_storage_type', 'session');
-                    window.location.href = '/file-tools';
-                };
-                reader.onerror = () => {
-                    alert('Failed to read file. Please try again.');
-                };
-                reader.readAsDataURL(file);
+                const r = new FileReader();
+                r.onload = e => { sessionStorage.setItem('vetri_file_data', e.target.result); sessionStorage.setItem('vetri_storage_type', 'session'); window.location.href = '/file-tools'; };
+                r.onerror = () => alert('Failed to read file.');
+                r.readAsDataURL(file);
             }
         }
 
-        /* ── Store large file in IndexedDB ── */
-        function storeInIndexedDB(file, callback) {
-            const request = indexedDB.open('VetriFilesDB', 1);
-
-            request.onupgradeneeded = e => {
-                const db = e.target.result;
-                if (!db.objectStoreNames.contains('files')) {
-                    db.createObjectStore('files', { keyPath: 'id' });
-                }
+        function storeInIndexedDB(file, cb) {
+            const req = indexedDB.open('VetriFilesDB', 1);
+            req.onupgradeneeded = e => { const db = e.target.result; if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', { keyPath: 'id' }); };
+            req.onsuccess = e => {
+                const db = e.target.result, tx = db.transaction('files', 'readwrite');
+                tx.objectStore('files').put({ id: 'current_file', file });
+                tx.oncomplete = () => { db.close(); cb(); };
+                tx.onerror = () => { const r = new FileReader(); r.onload = ev => { sessionStorage.setItem('vetri_file_data', ev.target.result); sessionStorage.setItem('vetri_storage_type', 'session'); cb(); }; r.readAsDataURL(file); };
             };
-
-            request.onsuccess = e => {
-                const db = e.target.result;
-                const tx = db.transaction('files', 'readwrite');
-                const store = tx.objectStore('files');
-                store.put({ id: 'current_file', file: file });
-                tx.oncomplete = () => {
-                    db.close();
-                    callback();
-                };
-                tx.onerror = () => {
-                    // IndexedDB failed — try direct dataURL anyway
-                    const reader = new FileReader();
-                    reader.onload = ev => {
-                        sessionStorage.setItem('vetri_file_data', ev.target.result);
-                        sessionStorage.setItem('vetri_storage_type', 'session');
-                        callback();
-                    };
-                    reader.readAsDataURL(file);
-                };
-            };
-
-            request.onerror = () => {
-                // IndexedDB not available — fallback to dataURL
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    sessionStorage.setItem('vetri_file_data', ev.target.result);
-                    sessionStorage.setItem('vetri_storage_type', 'session');
-                    callback();
-                };
-                reader.readAsDataURL(file);
-            };
+            req.onerror = () => { const r = new FileReader(); r.onload = ev => { sessionStorage.setItem('vetri_file_data', ev.target.result); sessionStorage.setItem('vetri_storage_type', 'session'); cb(); }; r.readAsDataURL(file); };
         }
 
-        /* ── Category pills active toggle ── */
         document.querySelectorAll('.cat-pill').forEach(pill => {
-            pill.addEventListener('click', e => {
-                e.preventDefault();
-                document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-                pill.classList.add('active');
-            });
+            pill.addEventListener('click', e => { e.preventDefault(); document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active')); pill.classList.add('active'); });
         });
     </script>
-
 </body>
 
 </html>
