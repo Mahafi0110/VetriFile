@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.service.VideoService;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -53,16 +54,23 @@ public class VideoController {
     }
 
     // ── EXTRACT AUDIO FROM VIDEO ──────────────
+    // ✅ FIXED: added format, bitrate, sampleRate, channels params
     @PostMapping("/extract-audio")
     public ResponseEntity<ByteArrayResource> extractAudio(
-            @RequestParam("file") MultipartFile file) {
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "format",     defaultValue = "mp3")   String format,
+            @RequestParam(value = "bitrate",    defaultValue = "192")   String bitrate,
+            @RequestParam(value = "sampleRate", defaultValue = "44100") String sampleRate,
+            @RequestParam(value = "channels",   defaultValue = "2")     String channels) {
         try {
-            byte[] result = videoService.extractAudio(file);
+            byte[] result = videoService.extractAudio(
+                file, format, bitrate, sampleRate, channels
+            );
             return buildDownloadResponse(
                 result,
                 "audio_" + file.getOriginalFilename()
-                    .replaceAll("\\.[^.]+$", "") + ".mp3",
-                "audio/mpeg"
+                    .replaceAll("\\.[^.]+$", "") + "." + format,
+                "audio/" + format
             );
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -85,6 +93,29 @@ public class VideoController {
         }
     }
 
+    // ── COMPRESS VIDEO ────────────────────────
+    @PostMapping("/compress")
+    public ResponseEntity<ByteArrayResource> compressVideo(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "level",      defaultValue = "medium")   String level,
+            @RequestParam(value = "crf",        defaultValue = "28")       int crf,
+            @RequestParam(value = "resolution", defaultValue = "original") String resolution,
+            @RequestParam(value = "format",     defaultValue = "mp4")      String format) {
+        try {
+            byte[] result = videoService.compressVideo(
+                file, level, crf, resolution, format
+            );
+            return buildDownloadResponse(
+                result,
+                "compressed_" + file.getOriginalFilename()
+                    .replaceAll("\\.[^.]+$", "") + "." + format,
+                "video/" + format
+            );
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     // ── HELPER ───────────────────────────────
     private ResponseEntity<ByteArrayResource> buildDownloadResponse(
             byte[] data, String filename, String contentType) {
@@ -96,32 +127,7 @@ public class VideoController {
             .contentLength(data.length)
             .body(resource);
     }
-   @PostMapping("/compress")
-public ResponseEntity<ByteArrayResource> compressVideo(
-        @RequestParam("file") MultipartFile file,
-        @RequestParam(value="level",
-            defaultValue="medium") String level,
-        @RequestParam(value="crf",
-            defaultValue="28") int crf,
-        @RequestParam(value="resolution",
-            defaultValue="original") String resolution,
-        @RequestParam(value="format",
-            defaultValue="mp4") String format) {
-    try {
-        byte[] result = videoService.compressVideo(
-            file, level, crf, resolution, format
-        );
-        return buildDownloadResponse(
-            result,
-            "compressed_" +
-              file.getOriginalFilename()
-                .replaceAll("\\.[^.]+$","") + "." + format,
-            "video/" + format
-        );
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().build();
-    }
-}
+
     // ── HEALTH CHECK FOR FFMPEG ───────────────
     @GetMapping("/health/ffmpeg")
     public ResponseEntity<String> checkFFmpeg() {
@@ -130,7 +136,6 @@ public ResponseEntity<ByteArrayResource> compressVideo(
             pb.redirectErrorStream(true);
             Process process = pb.start();
             boolean completed = process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
-            
             if (completed && process.exitValue() == 0) {
                 return ResponseEntity.ok("FFmpeg is available");
             } else {

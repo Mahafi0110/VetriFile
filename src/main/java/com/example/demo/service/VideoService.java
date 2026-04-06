@@ -5,76 +5,20 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class VideoService {
 
-    private static void drainProcessOutput(Process process) throws IOException {
-        try (InputStream in = process.getInputStream()) {
-            in.readAllBytes();
-        }
-    }
+    private static final String FFMPEG = "ffmpeg"; // ✅ FIXED: use PATH
 
-    private static String safeInputName(String original) {
-        if (original == null || original.isBlank()) {
-            return "input.mp4";
+    private void logProcess(Process process) throws IOException {
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            System.out.println("[FFmpeg] " + line);
         }
-        String name = original.replaceAll("[^a-zA-Z0-9._-]", "_");
-        if (!name.contains(".")) {
-            name = name + ".mp4";
-        }
-        return name;
-    }
-
-    /**
-     * Runs ffmpeg; returns true if exit code 0 and output exists and is non-empty.
-     */
-    private boolean runFfmpegTrim(
-            Path inputFile,
-            Path outputFile,
-            double startSec,
-            double durationSec,
-            boolean streamCopy) throws IOException, InterruptedException {
-
-        List<String> cmd = new ArrayList<>();
-        cmd.add("ffmpeg");
-        cmd.add("-hide_banner");
-        cmd.add("-y");
-        cmd.add("-i");
-        cmd.add(inputFile.toAbsolutePath().toString());
-        cmd.add("-ss");
-        cmd.add(Double.toString(startSec));
-        cmd.add("-t");
-        cmd.add(Double.toString(durationSec));
-        if (streamCopy) {
-            cmd.add("-c");
-            cmd.add("copy");
-            cmd.add("-avoid_negative_ts");
-            cmd.add("make_zero");
-        } else {
-            cmd.add("-c:v");
-            cmd.add("libx264");
-            cmd.add("-preset");
-            cmd.add("fast");
-            cmd.add("-crf");
-            cmd.add("23");
-            cmd.add("-c:a");
-            cmd.add("aac");
-            cmd.add("-movflags");
-            cmd.add("+faststart");
-        }
-        cmd.add(outputFile.toAbsolutePath().toString());
-
-        ProcessBuilder pb = new ProcessBuilder(cmd);
-        pb.redirectErrorStream(true);
-        Process process = pb.start();
-        drainProcessOutput(process);
-        int code = process.waitFor();
-        return code == 0
-                && Files.exists(outputFile)
-                && Files.size(outputFile) > 0;
     }
 
     // ── CONVERT VIDEO ─────────────────────────
@@ -82,95 +26,117 @@ public class VideoService {
             throws IOException, InterruptedException {
 
         Path tempDir = Files.createTempDirectory("vetri_video_");
-        Path inputFile = tempDir.resolve(
-                file.getOriginalFilename());
-        Path outputFile = tempDir.resolve("output." + format);
+        Path input = tempDir.resolve("input.mp4");
+        Path output = tempDir.resolve("output." + format);
 
         try {
-            Files.write(inputFile, file.getBytes());
+            Files.write(input, file.getBytes());
 
             ProcessBuilder pb = new ProcessBuilder(
-                    "ffmpeg",
-                    "-i", inputFile.toString(),
-                    "-y", outputFile.toString());
+                    FFMPEG,
+                    "-i", input.toString(),
+                    "-preset", "ultrafast",
+                    "-y", output.toString());
+
             pb.redirectErrorStream(true);
             Process process = pb.start();
-            process.waitFor();
+            logProcess(process);
 
-            return Files.readAllBytes(outputFile);
+            if (process.waitFor() != 0) {
+                throw new RuntimeException("Convert failed");
+            }
+
+            return Files.readAllBytes(output);
 
         } finally {
-            Files.deleteIfExists(inputFile);
-            Files.deleteIfExists(outputFile);
+            Files.deleteIfExists(input);
+            Files.deleteIfExists(output);
             Files.deleteIfExists(tempDir);
         }
     }
 
     // ── TRIM VIDEO ────────────────────────────
     public byte[] trimVideo(MultipartFile file,
-            double start, double end)
+            double start,
+            double end)
             throws IOException, InterruptedException {
 
-        if (end <= start) {
-            throw new IllegalArgumentException("end must be greater than start");
-        }
-
         Path tempDir = Files.createTempDirectory("vetri_video_");
-        Path inputFile = tempDir.resolve(safeInputName(file.getOriginalFilename()));
-        Path outputFile = tempDir.resolve("trimmed.mp4");
-
-        double duration = end - start;
+        Path input = tempDir.resolve("input.mp4");
+        Path output = tempDir.resolve("trimmed.mp4");
 
         try {
-            Files.write(inputFile, file.getBytes());
+            Files.write(input, file.getBytes());
 
-            Files.deleteIfExists(outputFile);
-            boolean ok = runFfmpegTrim(inputFile, outputFile, start, duration, true);
-            if (!ok) {
-                Files.deleteIfExists(outputFile);
-                ok = runFfmpegTrim(inputFile, outputFile, start, duration, false);
+            ProcessBuilder pb = new ProcessBuilder(
+                    FFMPEG,
+                    "-ss", String.valueOf(start),
+                    "-i", input.toString(),
+                    "-t", String.valueOf(end - start),
+                    "-vcodec", "libx264",
+                    "-preset", "ultrafast",
+                    "-crf", "30",
+                    "-acodec", "aac",
+                    "-y", output.toString());
+
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+            logProcess(process);
+
+            if (process.waitFor() != 0) {
+                throw new RuntimeException("Trim failed");
             }
-            if (!ok) {
-                throw new IOException(
-                        "ffmpeg failed (is ffmpeg installed and on PATH?). "
-                                + "Stream-copy failed and re-encode fallback failed.");
-            }
-            return Files.readAllBytes(outputFile);
+
+            return Files.readAllBytes(output);
 
         } finally {
-            Files.deleteIfExists(outputFile);
-            Files.deleteIfExists(inputFile);
+            Files.deleteIfExists(input);
+            Files.deleteIfExists(output);
             Files.deleteIfExists(tempDir);
         }
     }
 
     // ── EXTRACT AUDIO ─────────────────────────
-    public byte[] extractAudio(MultipartFile file)
+    // ✅ FIXED: now accepts format, bitrate, sampleRate, channels params
+    public byte[] extractAudio(MultipartFile file,
+                                String format,
+                                String bitrate,
+                                String sampleRate,
+                                String channels)
             throws IOException, InterruptedException {
 
         Path tempDir = Files.createTempDirectory("vetri_video_");
-        Path inputFile = tempDir.resolve(
-                file.getOriginalFilename());
-        Path outputFile = tempDir.resolve("audio.mp3");
+        Path input = tempDir.resolve("input.mp4");
+        Path output = tempDir.resolve("audio." + format); // ✅ use chosen format
 
         try {
-            Files.write(inputFile, file.getBytes());
+            Files.write(input, file.getBytes());
 
-            ProcessBuilder pb = new ProcessBuilder(
-                    "ffmpeg",
-                    "-i", inputFile.toString(),
-                    "-q:a", "0",
-                    "-map", "a",
-                    "-y", outputFile.toString());
+            List<String> cmd = new ArrayList<>(Arrays.asList(
+                    FFMPEG,
+                    "-i", input.toString(),
+                    "-vn",                            // remove video
+                    "-acodec", getAudioCodec(format), // ✅ correct codec per format
+                    "-b:a", bitrate + "k",            // ✅ use chosen bitrate
+                    "-ar", sampleRate,                // ✅ use chosen sample rate
+                    "-ac", channels,                  // ✅ use chosen channels
+                    "-y", output.toString()
+            ));
+
+            ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.redirectErrorStream(true);
             Process process = pb.start();
-            process.waitFor();
+            logProcess(process);
 
-            return Files.readAllBytes(outputFile);
+            if (process.waitFor() != 0) {
+                throw new RuntimeException("Audio extract failed");
+            }
+
+            return Files.readAllBytes(output);
 
         } finally {
-            Files.deleteIfExists(inputFile);
-            Files.deleteIfExists(outputFile);
+            Files.deleteIfExists(input);
+            Files.deleteIfExists(output);
             Files.deleteIfExists(tempDir);
         }
     }
@@ -182,99 +148,112 @@ public class VideoService {
         Path tempDir = Files.createTempDirectory("vetri_video_");
 
         try {
-            StringBuilder listContent = new StringBuilder();
-            Path[] inputPaths = new Path[files.length];
+            StringBuilder list = new StringBuilder();
 
             for (int i = 0; i < files.length; i++) {
-                inputPaths[i] = tempDir.resolve("input_" + i + ".mp4");
-                Files.write(inputPaths[i], files[i].getBytes());
-                listContent.append("file '")
-                        .append(inputPaths[i].toString())
-                        .append("'\n");
+                Path p = tempDir.resolve("input_" + i + ".mp4");
+                Files.write(p, files[i].getBytes());
+                list.append("file '").append(p).append("'\n");
             }
 
             Path listFile = tempDir.resolve("list.txt");
-            Path outputFile = tempDir.resolve("merged.mp4");
-            Files.writeString(listFile, listContent.toString());
+            Path output = tempDir.resolve("merged.mp4");
+
+            Files.writeString(listFile, list.toString());
 
             ProcessBuilder pb = new ProcessBuilder(
-                    "ffmpeg",
+                    FFMPEG,
                     "-f", "concat",
                     "-safe", "0",
                     "-i", listFile.toString(),
                     "-c", "copy",
-                    "-y", outputFile.toString());
+                    "-y", output.toString());
+
             pb.redirectErrorStream(true);
             Process process = pb.start();
-            process.waitFor();
+            logProcess(process);
 
-            return Files.readAllBytes(outputFile);
+            if (process.waitFor() != 0) {
+                throw new RuntimeException("Merge failed");
+            }
+
+            return Files.readAllBytes(output);
 
         } finally {
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(tempDir)) {
-                for (Path p : stream)
-                    Files.deleteIfExists(p);
+            Files.walk(tempDir)
+                    .sorted(Comparator.reverseOrder())
+                    .forEach(path -> {
+                        try {
+                            Files.deleteIfExists(path);
+                        } catch (Exception ignored) {
+                        }
+                    });
+        }
+    }
+
+    // ── COMPRESS VIDEO ─────────────────────────
+    // ✅ FIXED: now uses actual crf param and applies resolution scaling
+    public byte[] compressVideo(MultipartFile file,
+            String level,
+            int crf,
+            String resolution,
+            String format)
+            throws IOException, InterruptedException {
+
+        Path tempDir = Files.createTempDirectory("vetri_video_");
+        Path input = tempDir.resolve("input.mp4");
+        Path output = tempDir.resolve("compressed." + format);
+
+        try {
+            Files.write(input, file.getBytes());
+
+            List<String> cmd = new ArrayList<>(Arrays.asList(
+                    FFMPEG,
+                    "-i", input.toString(),
+                    "-vcodec", "libx264",
+                    "-crf", String.valueOf(crf),  // ✅ use actual crf from request
+                    "-preset", "ultrafast",
+                    "-acodec", "aac"
+            ));
+
+            // ✅ Apply resolution scaling only if not "original"
+            if (resolution != null && !resolution.equals("original")) {
+                cmd.add("-vf");
+                cmd.add("scale=-2:" + resolution); // e.g. scale=-2:720
             }
+
+            cmd.add("-y");
+            cmd.add(output.toString());
+
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+            logProcess(process);
+
+            if (process.waitFor() != 0) {
+                throw new RuntimeException("Compress failed");
+            }
+
+            return Files.readAllBytes(output);
+
+        } finally {
+            Files.deleteIfExists(input);
+            Files.deleteIfExists(output);
             Files.deleteIfExists(tempDir);
         }
     }
 
-    // ── COMPRESS VIDEO ─────────────────────────────
-// ── COMPRESS VIDEO ─────────────────────────────
-public byte[] compressVideo(MultipartFile file,
-                              String level,
-                              int crf,
-                              String resolution,
-                              String format)
-        throws IOException, InterruptedException {
-
-    Path tempDir    =
-      Files.createTempDirectory("vetri_video_");
-    Path inputFile  =
-      tempDir.resolve(file.getOriginalFilename());
-    Path outputFile =
-      tempDir.resolve("compressed." + format);
-
-    try {
-        Files.write(inputFile, file.getBytes());
-
-        List<String> cmd = new ArrayList<>();
-        cmd.add("ffmpeg");
-        cmd.add("-i");
-        cmd.add(inputFile.toString());
-
-        // CRF controls quality/size
-        cmd.add("-crf");
-        cmd.add(String.valueOf(crf));
-
-        // Resolution scaling
-        if (!resolution.equals("original")) {
-            cmd.add("-vf");
-            cmd.add("scale=-2:" + resolution);
+    // ── HELPER: map format to correct FFmpeg audio codec ──
+    private String getAudioCodec(String format) {
+        if (format == null) return "libmp3lame";
+        switch (format.toLowerCase()) {
+            case "mp3":  return "libmp3lame";
+            case "aac":  return "aac";
+            case "ogg":  return "libvorbis";
+            case "m4a":  return "aac";
+            case "wav":  return "pcm_s16le";
+            case "flac": return "flac";
+            default:     return "libmp3lame";
         }
-
-        // Audio quality
-        cmd.add("-b:a");
-        cmd.add("128k");
-
-        // Fast encoding preset
-        cmd.add("-preset");
-        cmd.add("fast");
-
-        cmd.add("-y");
-        cmd.add(outputFile.toString());
-
-        ProcessBuilder pb =
-          new ProcessBuilder(cmd);
-        pb.redirectErrorStream(true);
-        pb.start().waitFor();
-
-        return Files.readAllBytes(outputFile);
-
-    } finally {
-        Files.deleteIfExists(inputFile);
-        Files.deleteIfExists(outputFile);
-        Files.deleteIfExists(tempDir);
     }
-}
 }

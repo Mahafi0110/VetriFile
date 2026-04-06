@@ -1896,8 +1896,8 @@
 
                 const formData = new FormData();
                 formData.append('file', file, meta.name);
-                formData.append('startTime', trimStart.toFixed(3));
-                formData.append('endTime', trimEnd.toFixed(3));
+                formData.append('start', trimStart.toFixed(3));
+                formData.append('end', trimEnd.toFixed(3));
                 formData.append('format', format);
                 formData.append('fadeIn', fadeIn ? '1' : '0');
                 formData.append('fadeOut', fadeOut ? '1' : '0');
