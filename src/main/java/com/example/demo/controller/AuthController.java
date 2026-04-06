@@ -6,6 +6,7 @@ import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.service.AuthService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +24,15 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(
             @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
         try {
             AuthResponse authResponse = authService.register(request);
-            setJwtCookie(response, authResponse.getToken(), 7 * 24 * 60 * 60);
-            return ResponseEntity.ok(ApiResponse.success("Registration successful!", authResponse));
+            setJwtCookie(response, authResponse.getToken(),
+                    7 * 24 * 60 * 60, isHttps(httpRequest));
+            return ResponseEntity.ok(
+                    ApiResponse.success("Registration successful!", authResponse));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.error(e.getMessage()));
@@ -38,13 +42,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(
             @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response
     ) {
         try {
             AuthResponse authResponse = authService.login(request);
             int maxAge = request.isRememberMe() ? 30 * 24 * 60 * 60 : -1;
-            setJwtCookie(response, authResponse.getToken(), maxAge);
-            return ResponseEntity.ok(ApiResponse.success("Login successful!", authResponse));
+            setJwtCookie(response, authResponse.getToken(),
+                    maxAge, isHttps(httpRequest));
+            return ResponseEntity.ok(
+                    ApiResponse.success("Login successful!", authResponse));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error(e.getMessage()));
@@ -52,20 +59,37 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse> logout(HttpServletResponse response) {
+    public ResponseEntity<ApiResponse> logout(
+            HttpServletRequest httpRequest,
+            HttpServletResponse response) {
         Cookie cookie = new Cookie("vetri_token", "");
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
+        cookie.setSecure(isHttps(httpRequest));
         response.addCookie(cookie);
-        return ResponseEntity.ok(ApiResponse.success("Logged out successfully", null));
+        return ResponseEntity.ok(
+                ApiResponse.success("Logged out successfully", null));
     }
 
-    private void setJwtCookie(HttpServletResponse response, String token, int maxAge) {
+    // ── Detects if request came over HTTPS ─────────────
+    private boolean isHttps(HttpServletRequest request) {
+        // Check X-Forwarded-Proto header (set by Render/proxies)
+        String forwardedProto = request.getHeader("X-Forwarded-Proto");
+        if (forwardedProto != null) {
+            return "https".equalsIgnoreCase(forwardedProto);
+        }
+        // Fallback to request scheme
+        return "https".equalsIgnoreCase(request.getScheme());
+    }
+
+    private void setJwtCookie(HttpServletResponse response,
+                               String token, int maxAge, boolean secure) {
         Cookie cookie = new Cookie("vetri_token", token);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
+        cookie.setHttpOnly(true);   // JS cannot read it
+        cookie.setPath("/");        // sent on every request
         cookie.setMaxAge(maxAge);
+        cookie.setSecure(secure);   // true on HTTPS (Render), false on localhost
         response.addCookie(cookie);
     }
 }
