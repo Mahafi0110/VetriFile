@@ -99,10 +99,10 @@ public class VideoService {
     // ── EXTRACT AUDIO ─────────────────────────
     // ✅ FIXED: now accepts format, bitrate, sampleRate, channels params
     public byte[] extractAudio(MultipartFile file,
-                                String format,
-                                String bitrate,
-                                String sampleRate,
-                                String channels)
+            String format,
+            String bitrate,
+            String sampleRate,
+            String channels)
             throws IOException, InterruptedException {
 
         Path tempDir = Files.createTempDirectory("vetri_video_");
@@ -115,13 +115,12 @@ public class VideoService {
             List<String> cmd = new ArrayList<>(Arrays.asList(
                     FFMPEG,
                     "-i", input.toString(),
-                    "-vn",                            // remove video
+                    "-vn", // remove video
                     "-acodec", getAudioCodec(format), // ✅ correct codec per format
-                    "-b:a", bitrate + "k",            // ✅ use chosen bitrate
-                    "-ar", sampleRate,                // ✅ use chosen sample rate
-                    "-ac", channels,                  // ✅ use chosen channels
-                    "-y", output.toString()
-            ));
+                    "-b:a", bitrate + "k", // ✅ use chosen bitrate
+                    "-ar", sampleRate, // ✅ use chosen sample rate
+                    "-ac", channels, // ✅ use chosen channels
+                    "-y", output.toString()));
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.redirectErrorStream(true);
@@ -207,13 +206,23 @@ public class VideoService {
         try {
             Files.write(input, file.getBytes());
 
+            // List<String> cmd = new ArrayList<>(Arrays.asList(
+            // FFMPEG,
+            // "-i", input.toString(),
+            // "-vcodec", "libx264",
+            // "-crf", String.valueOf(crf), // ✅ use actual crf from request
+            // "-preset", "fast",
+            // "-acodec", "aac"
+            // ));
             List<String> cmd = new ArrayList<>(Arrays.asList(
                     FFMPEG,
                     "-i", input.toString(),
                     "-vcodec", "libx264",
-                    "-crf", String.valueOf(crf),  // ✅ use actual crf from request
-                    "-preset", "ultrafast",
-                    "-acodec", "aac"
+                    "-crf", String.valueOf(crf), // 18=low, 28=medium, 36=high
+                    "-preset", "fast", // ← change from ultrafast to fast
+                    "-acodec", "aac",
+                    "-b:a", "128k", // ← fix audio bitrate
+                    "-movflags", "+faststart" // ← better MP4 compatibility
             ));
 
             // ✅ Apply resolution scaling only if not "original"
@@ -245,15 +254,23 @@ public class VideoService {
 
     // ── HELPER: map format to correct FFmpeg audio codec ──
     private String getAudioCodec(String format) {
-        if (format == null) return "libmp3lame";
+        if (format == null)
+            return "libmp3lame";
         switch (format.toLowerCase()) {
-            case "mp3":  return "libmp3lame";
-            case "aac":  return "aac";
-            case "ogg":  return "libvorbis";
-            case "m4a":  return "aac";
-            case "wav":  return "pcm_s16le";
-            case "flac": return "flac";
-            default:     return "libmp3lame";
+            case "mp3":
+                return "libmp3lame";
+            case "aac":
+                return "aac";
+            case "ogg":
+                return "libvorbis";
+            case "m4a":
+                return "aac";
+            case "wav":
+                return "pcm_s16le";
+            case "flac":
+                return "flac";
+            default:
+                return "libmp3lame";
         }
     }
 }
