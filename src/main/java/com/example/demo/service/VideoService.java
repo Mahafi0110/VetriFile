@@ -206,24 +206,13 @@ public class VideoService {
         try {
             Files.write(input, file.getBytes());
 
-            // List<String> cmd = new ArrayList<>(Arrays.asList(
-            // FFMPEG,
-            // "-i", input.toString(),
-            // "-vcodec", "libx264",
-            // "-crf", String.valueOf(crf), // ✅ use actual crf from request
-            // "-preset", "fast",
-            // "-acodec", "aac"
-            // ));
             List<String> cmd = new ArrayList<>(Arrays.asList(
                     FFMPEG,
                     "-i", input.toString(),
                     "-vcodec", "libx264",
-                    "-crf", String.valueOf(crf), // 18=low, 28=medium, 36=high
-                    "-preset", "fast", // ← change from ultrafast to fast
-                    "-acodec", "aac",
-                    "-b:a", "128k", // ← fix audio bitrate
-                    "-movflags", "+faststart" // ← better MP4 compatibility
-            ));
+                    "-crf", String.valueOf(crf), // ✅ use actual crf from request
+                    "-preset", "ultrafast",
+                    "-acodec", "aac"));
 
             // ✅ Apply resolution scaling only if not "original"
             if (resolution != null && !resolution.equals("original")) {

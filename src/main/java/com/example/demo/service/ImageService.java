@@ -60,15 +60,43 @@ public class ImageService {
     }
 
     // ── CONVERT IMAGE ─────────────────────────
-    public byte[] convertImage(MultipartFile file, String format)
-            throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Thumbnails.of(file.getInputStream())
-                .scale(1.0)
-                .outputFormat(format)
-                .toOutputStream(out);
-        return out.toByteArray();
+    // public byte[] convertImage(MultipartFile file, String format)
+    //         throws IOException {
+    //     ByteArrayOutputStream out = new ByteArrayOutputStream();
+    //     Thumbnails.of(file.getInputStream())
+    //             .scale(1.0)
+    //             .outputFormat(format)
+    //             .toOutputStream(out);
+    //     return out.toByteArray();
+    // }
+    public byte[] convertImage(MultipartFile file, String format) 
+        throws IOException {
+    
+    // WebP is not supported by standard Java ImageIO
+    // Use a special handling
+    if (format.equalsIgnoreCase("webp")) {
+        // Option 1: just return as PNG if WebP not supported
+        // Option 2: use a WebP library
+        format = "png"; // fallback to PNG
     }
+    
+    BufferedImage image = ImageIO.read(file.getInputStream());
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    
+    // JPG doesn't support transparency — convert to RGB
+    if (format.equalsIgnoreCase("jpg") || 
+        format.equalsIgnoreCase("jpeg")) {
+        BufferedImage rgbImage = new BufferedImage(
+            image.getWidth(), image.getHeight(), 
+            BufferedImage.TYPE_INT_RGB);
+        rgbImage.createGraphics().drawImage(image, 0, 0, 
+            java.awt.Color.WHITE, null);
+        image = rgbImage;
+    }
+    
+    ImageIO.write(image, format.toUpperCase(), baos);
+    return baos.toByteArray();
+}
 
     // ── ADD WATERMARK ─────────────────────────
     public byte[] addWatermark(MultipartFile file, String text)
