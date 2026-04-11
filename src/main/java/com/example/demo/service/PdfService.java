@@ -156,7 +156,7 @@ public class PdfService {
     }
 
     // ── COMPRESS PDF ──────────────────────────
-public byte[] compressPdf(MultipartFile file, int quality) throws IOException {
+    public byte[] compressPdf(MultipartFile file, int quality) throws IOException {
 
     float imageQuality = Math.max(0.4f, Math.min(quality / 100f, 0.8f));
 
@@ -168,53 +168,75 @@ public byte[] compressPdf(MultipartFile file, int quality) throws IOException {
             if (resources == null) continue;
 
             for (COSName name : resources.getXObjectNames()) {
-                PDXObject xObject = resources.getXObject(name);
+                PDXObject xObject;
+                try {
+                    xObject = resources.getXObject(name);
+                } catch (Exception e) {
+                    continue; // ✅ skip unreadable objects
+                }
+
                 if (!(xObject instanceof PDImageXObject)) continue;
 
                 PDImageXObject image = (PDImageXObject) xObject;
-                BufferedImage buffered = image.getImage();
 
-                if (buffered == null || buffered.getWidth() < 500) continue;
+                // ✅ Skip small images — not worth compressing
+                if (image.getWidth() < 500 || image.getHeight() < 500) continue;
 
-                int newWidth = buffered.getWidth() / 2;
-                int newHeight = buffered.getHeight() / 2;
+                // ✅ Skip if already small file size
+                if (image.getStream().getLength() < 50_000) continue;
 
-                BufferedImage resized =
-                        new BufferedImage(newWidth, newHeight, buffered.getType());
+                BufferedImage buffered;
+                try {
+                    buffered = image.getImage();
+                } catch (Exception e) {
+                    continue; // ✅ skip unreadable images
+                }
 
-                Graphics2D g = resized.createGraphics();
-                g.drawImage(buffered, 0, 0, newWidth, newHeight, null);
-                g.dispose();
+                if (buffered == null) continue;
 
-                ByteArrayOutputStream imgOut = new ByteArrayOutputStream();
+                try {
+                    int newWidth  = buffered.getWidth()  / 2;
+                    int newHeight = buffered.getHeight() / 2;
 
-                ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
-                ImageWriteParam param = writer.getDefaultWriteParam();
-                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                param.setCompressionQuality(imageQuality);
+                    // ✅ Use TYPE_INT_RGB to avoid alpha channel issues
+                    BufferedImage resized = new BufferedImage(
+                            newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
 
-                ImageOutputStream ios = ImageIO.createImageOutputStream(imgOut);
-                writer.setOutput(ios);
+                    Graphics2D g = resized.createGraphics();
+                    g.drawImage(buffered, 0, 0, newWidth, newHeight, null);
+                    g.dispose();
+                    buffered.flush(); // ✅ free original image RAM immediately
 
-                writer.write(null, new IIOImage(resized, null, null), param);
+                    ByteArrayOutputStream imgOut = new ByteArrayOutputStream();
+                    ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+                    ImageWriteParam param = writer.getDefaultWriteParam();
+                    param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                    param.setCompressionQuality(imageQuality);
 
-                writer.dispose();
-                ios.close();
+                    try (ImageOutputStream ios = ImageIO.createImageOutputStream(imgOut)) {
+                        writer.setOutput(ios);
+                        writer.write(null, new IIOImage(resized, null, null), param);
+                    }
+                    writer.dispose();
+                    resized.flush(); // ✅ free resized image RAM
 
-                byte[] newBytes = imgOut.toByteArray();
+                    byte[] newBytes = imgOut.toByteArray();
 
-                if (newBytes.length < image.getStream().getLength()) {
-                    PDImageXObject compressed =
-                            JPEGFactory.createFromByteArray(document, newBytes);
+                    if (newBytes.length < image.getStream().getLength()) {
+                        PDImageXObject compressed =
+                                JPEGFactory.createFromByteArray(document, newBytes);
+                        resources.put(name, compressed);
+                    }
 
-                    resources.put(name, compressed);
+                } catch (Exception e) {
+                    // ✅ skip any image that fails — don't crash whole PDF
+                    System.out.println("Skipping image: " + e.getMessage());
                 }
             }
         }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         document.save(out);
-
         return out.toByteArray();
     }
 }

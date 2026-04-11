@@ -18,4 +18,4 @@ RUN mvn clean package -DskipTests
 EXPOSE 8080
 
 # ✅ Memory limit set here in CMD (not in application.properties)
-CMD ["java", "-Xmx256m", "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-Xmx384m", "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
