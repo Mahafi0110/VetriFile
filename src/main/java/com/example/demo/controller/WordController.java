@@ -2,13 +2,15 @@ package com.example.demo.controller;
 
 import com.example.demo.service.WordService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Map;
 
 @RestController
@@ -18,97 +20,78 @@ public class WordController {
     @Autowired
     private WordService wordService;
 
-    /**
-     * Convert Word (.doc / .docx) → PDF  [LibreOffice]
-     */
     @PostMapping("/to-pdf")
-    public ResponseEntity<ByteArrayResource> convertWordToPdf(
+    public ResponseEntity<StreamingResponseBody> convertWordToPdf(
             @RequestParam("file") MultipartFile file) throws Exception {
 
-        byte[] pdfBytes = wordService.convertToPdf(file);
+        byte[] result = wordService.convertToPdf(file);
         String outputName = stripExtension(file.getOriginalFilename()) + ".pdf";
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + outputName + "\"")
-                .contentType(MediaType.APPLICATION_PDF)
-                .contentLength(pdfBytes.length)
-                .body(new ByteArrayResource(pdfBytes));
+        return buildStreamResponse(result, outputName, "application/pdf");
     }
 
-    /**
-     * Convert Word (.doc / .docx) → HTML  [LibreOffice]
-     */
     @PostMapping("/to-html")
-    public ResponseEntity<ByteArrayResource> convertWordToHtml(
+    public ResponseEntity<StreamingResponseBody> convertWordToHtml(
             @RequestParam("file") MultipartFile file) throws Exception {
 
-        byte[] htmlBytes = wordService.convertToHtml(file);
+        byte[] result = wordService.convertToHtml(file);
         String outputName = stripExtension(file.getOriginalFilename()) + ".html";
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + outputName + "\"")
-                .contentType(MediaType.TEXT_HTML)
-                .contentLength(htmlBytes.length)
-                .body(new ByteArrayResource(htmlBytes));
+        return buildStreamResponse(result, outputName, "text/html");
     }
 
-    /**
-     * Extract plain text (.doc / .docx)  [Apache POI]
-     */
     @PostMapping("/to-text")
-    public ResponseEntity<ByteArrayResource> convertWordToText(
+    public ResponseEntity<StreamingResponseBody> convertWordToText(
             @RequestParam("file") MultipartFile file) throws Exception {
 
-        byte[] textBytes = wordService.extractText(file);
+        byte[] result = wordService.extractText(file);
         String outputName = stripExtension(file.getOriginalFilename()) + ".txt";
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + outputName + "\"")
-                .contentType(MediaType.TEXT_PLAIN)
-                .contentLength(textBytes.length)
-                .body(new ByteArrayResource(textBytes));
+        return buildStreamResponse(result, outputName, "text/plain");
     }
 
-    /**
-     * Word / char / paragraph count  (.doc + .docx)
-     */
     @PostMapping("/word-count")
     public ResponseEntity<Map<String, Object>> wordCount(
             @RequestParam("file") MultipartFile file) throws Exception {
         return ResponseEntity.ok(wordService.getWordCount(file));
     }
 
-    /**
-     * Extract document metadata  (.doc + .docx)
-     */
     @PostMapping("/metadata")
     public ResponseEntity<Map<String, Object>> metadata(
             @RequestParam("file") MultipartFile file) throws Exception {
         return ResponseEntity.ok(wordService.extractMetadata(file));
     }
 
-    /**
-     * Merge multiple .doc / .docx → single .docx
-     */
     @PostMapping("/merge")
-    public ResponseEntity<ByteArrayResource> mergeDocuments(
+    public ResponseEntity<StreamingResponseBody> mergeDocuments(
             @RequestParam("files") MultipartFile[] files) throws Exception {
 
-        byte[] merged = wordService.mergeDocuments(files);
+        byte[] result = wordService.mergeDocuments(files);
+        return buildStreamResponse(result, "merged.docx",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    }
+
+    // ── HELPER ───────────────────────────────────────────────────────────────
+    private ResponseEntity<StreamingResponseBody> buildStreamResponse(
+            byte[] data, String filename, String contentType) {
+
+        StreamingResponseBody stream = outputStream -> {
+            try (InputStream in = new ByteArrayInputStream(data)) {
+                byte[] buffer = new byte[8 * 1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                    outputStream.flush(); // ✅ push each chunk immediately
+                }
+            }
+        };
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"merged.docx\"")
-                .contentType(MediaType.parseMediaType(
-                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
-                .contentLength(merged.length)
-                .body(new ByteArrayResource(merged));
+                        "attachment; filename=\"" + filename + "\"")
+                .header("X-Accel-Buffering", "no") // ✅ disable Render proxy buffering
+                .contentType(MediaType.parseMediaType(contentType))
+                .contentLength(data.length)
+                .body(stream);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
     private static String stripExtension(String name) {
         if (name == null) return "output";
         int dot = name.lastIndexOf('.');

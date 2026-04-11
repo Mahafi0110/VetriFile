@@ -2,12 +2,12 @@ package com.example.demo.controller;
 
 import com.example.demo.service.PdfService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -20,63 +20,46 @@ public class PdfController {
 
     private final PdfService pdfService;
 
-    // ── COMPRESS PDF ──────────────────────────
-    // @PostMapping("/compress")
-    // public ResponseEntity<InputStreamResource> compressPdf(
-    //         @RequestParam("file") MultipartFile file,
-    //         @RequestParam(value = "quality", defaultValue = "70") int quality) throws IOException {
-
-    //     InputStream resultStream = new ByteArrayInputStream(pdfService.compressPdf(file, quality));
-    //     return buildStreamResponse(resultStream, "compressed_" + file.getOriginalFilename(), "application/pdf");
-    // }
     @PostMapping("/compress")
-public ResponseEntity<InputStreamResource> compressPdf(
-        @RequestParam("file") MultipartFile file,
-        @RequestParam(value = "quality", defaultValue = "70") int quality) throws IOException {
+    public ResponseEntity<StreamingResponseBody> compressPdf(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "quality", defaultValue = "70") int quality) throws IOException {
 
-    byte[] result = pdfService.compressPdf(file, quality);
+        byte[] result = pdfService.compressPdf(file, quality);
+        return buildStreamResponse(result,
+                "compressed_" + file.getOriginalFilename(), "application/pdf");
+    }
 
-    InputStreamResource resource =
-            new InputStreamResource(new ByteArrayInputStream(result));
-
-    return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename=compressed_" + file.getOriginalFilename())
-            .contentType(MediaType.APPLICATION_PDF)
-            .body(resource);
-}
-
-
-    // ── MERGE PDFs ────────────────────────────
     @PostMapping("/merge")
-    public ResponseEntity<InputStreamResource> mergePdfs(@RequestParam("files") MultipartFile[] files) throws IOException {
-        InputStream resultStream = new ByteArrayInputStream(pdfService.mergePdfs(files));
-        return buildStreamResponse(resultStream, "merged_output.pdf", "application/pdf");
+    public ResponseEntity<StreamingResponseBody> mergePdfs(
+            @RequestParam("files") MultipartFile[] files) throws IOException {
+
+        byte[] result = pdfService.mergePdfs(files);
+        return buildStreamResponse(result, "merged_output.pdf", "application/pdf");
     }
 
-    // ── LOCK PDF ──────────────────────────────
     @PostMapping("/lock")
-    public ResponseEntity<InputStreamResource> lockPdf(
+    public ResponseEntity<StreamingResponseBody> lockPdf(
             @RequestParam("file") MultipartFile file,
             @RequestParam("password") String password) throws IOException {
 
-        InputStream resultStream = new ByteArrayInputStream(pdfService.lockPdf(file, password));
-        return buildStreamResponse(resultStream, "locked_" + file.getOriginalFilename(), "application/pdf");
+        byte[] result = pdfService.lockPdf(file, password);
+        return buildStreamResponse(result,
+                "locked_" + file.getOriginalFilename(), "application/pdf");
     }
 
-    // ── UNLOCK PDF ────────────────────────────
     @PostMapping("/unlock")
-    public ResponseEntity<InputStreamResource> unlockPdf(
+    public ResponseEntity<StreamingResponseBody> unlockPdf(
             @RequestParam("file") MultipartFile file,
             @RequestParam("password") String password) throws IOException {
 
-        InputStream resultStream = new ByteArrayInputStream(pdfService.unlockPdf(file, password));
-        return buildStreamResponse(resultStream, "unlocked_" + file.getOriginalFilename(), "application/pdf");
+        byte[] result = pdfService.unlockPdf(file, password);
+        return buildStreamResponse(result,
+                "unlocked_" + file.getOriginalFilename(), "application/pdf");
     }
 
-    // ── SPLIT PDF ─────────────────────────────
     @PostMapping("/split")
-    public ResponseEntity<InputStreamResource> splitPdf(
+    public ResponseEntity<StreamingResponseBody> splitPdf(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "mode", defaultValue = "range") String mode,
             @RequestParam(value = "page", required = false) Integer page,
@@ -85,26 +68,27 @@ public ResponseEntity<InputStreamResource> compressPdf(
 
         if ("every".equalsIgnoreCase(mode)) {
             int n = everyN != null && everyN > 0 ? everyN : 1;
-            InputStream zipStream = new ByteArrayInputStream(pdfService.splitPdfEveryNAsZip(file, n));
-            return buildStreamResponse(zipStream, "split_parts.zip", "application/zip");
+            byte[] result = pdfService.splitPdfEveryNAsZip(file, n);
+            return buildStreamResponse(result, "split_parts.zip", "application/zip");
         }
 
         if (pageRange != null && !pageRange.isBlank()) {
-            InputStream rangeStream = new ByteArrayInputStream(pdfService.extractPdfPagesByRange(file, pageRange));
-            return buildStreamResponse(rangeStream, "split_" + file.getOriginalFilename(), "application/pdf");
+            byte[] result = pdfService.extractPdfPagesByRange(file, pageRange);
+            return buildStreamResponse(result,
+                    "split_" + file.getOriginalFilename(), "application/pdf");
         }
 
         if (page != null && page > 0) {
-            InputStream pageStream = new ByteArrayInputStream(pdfService.splitPdf(file, page));
-            return buildStreamResponse(pageStream, "split_" + file.getOriginalFilename(), "application/pdf");
+            byte[] result = pdfService.splitPdf(file, page);
+            return buildStreamResponse(result,
+                    "split_" + file.getOriginalFilename(), "application/pdf");
         }
 
         return ResponseEntity.badRequest().build();
     }
 
-    // ── ADD SIGNATURE ─────────────────────────
     @PostMapping("/add-signature")
-    public ResponseEntity<InputStreamResource> addSignature(
+    public ResponseEntity<StreamingResponseBody> addSignature(
             @RequestParam("file") MultipartFile file,
             @RequestParam("signature") MultipartFile signature,
             @RequestParam(value = "position", defaultValue = "bottom-center") String position,
@@ -119,19 +103,33 @@ public ResponseEntity<InputStreamResource> compressPdf(
             resolvedRange = "custom:" + fromPage + ":" + toPage;
         }
 
-        InputStream resultStream = new ByteArrayInputStream(
-                pdfService.addSignature(file, signature, position, resolvedRange, size, opacity)
-        );
-
-        return buildStreamResponse(resultStream, "signed_" + file.getOriginalFilename(), "application/pdf");
+        byte[] result = pdfService.addSignature(
+                file, signature, position, resolvedRange, size, opacity);
+        return buildStreamResponse(result,
+                "signed_" + file.getOriginalFilename(), "application/pdf");
     }
 
-    // ── HELPER ───────────────────────────────
-    private ResponseEntity<InputStreamResource> buildStreamResponse(InputStream stream, String filename, String contentType) {
-        InputStreamResource resource = new InputStreamResource(stream);
+    // ── HELPER ───────────────────────────────────────────────────────────────
+    private ResponseEntity<StreamingResponseBody> buildStreamResponse(
+            byte[] data, String filename, String contentType) {
+
+        StreamingResponseBody stream = outputStream -> {
+            try (InputStream in = new ByteArrayInputStream(data)) {
+                byte[] buffer = new byte[8 * 1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                    outputStream.flush(); // ✅ push each chunk immediately
+                }
+            }
+        };
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + filename + "\"")
+                .header("X-Accel-Buffering", "no") // ✅ disable Render proxy buffering
                 .contentType(MediaType.parseMediaType(contentType))
-                .body(resource);
+                .contentLength(data.length)
+                .body(stream);
     }
 }
