@@ -42,6 +42,14 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password")
                         .permitAll()
+                          // ✅ Tool APIs — public (users don't need to login to use tools)
+        .requestMatchers(
+                "/api/pdf/**",
+                "/api/video/**",
+                "/api/audio/**",
+                "/api/image/**",
+                "/api/word/**")
+        .permitAll()
 
                         // Everything else — must be logged in
                         .anyRequest().authenticated())

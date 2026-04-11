@@ -158,9 +158,10 @@ public class PdfService {
     // ── COMPRESS PDF ──────────────────────────
     public byte[] compressPdf(MultipartFile file, int quality) throws IOException {
 
+    byte[] original = file.getBytes(); // ✅ keep original
     float imageQuality = Math.max(0.4f, Math.min(quality / 100f, 0.8f));
 
-    try (InputStream is = file.getInputStream();
+    try (InputStream is = new ByteArrayInputStream(original);
          PDDocument document = PDDocument.load(is, MemoryUsageSetting.setupTempFileOnly())) {
 
         for (PDPage page : document.getPages()) {
@@ -169,43 +170,30 @@ public class PdfService {
 
             for (COSName name : resources.getXObjectNames()) {
                 PDXObject xObject;
-                try {
-                    xObject = resources.getXObject(name);
-                } catch (Exception e) {
-                    continue; // ✅ skip unreadable objects
-                }
+                try { xObject = resources.getXObject(name); }
+                catch (Exception e) { continue; }
 
                 if (!(xObject instanceof PDImageXObject)) continue;
 
                 PDImageXObject image = (PDImageXObject) xObject;
-
-                // ✅ Skip small images — not worth compressing
                 if (image.getWidth() < 500 || image.getHeight() < 500) continue;
-
-                // ✅ Skip if already small file size
                 if (image.getStream().getLength() < 50_000) continue;
 
                 BufferedImage buffered;
-                try {
-                    buffered = image.getImage();
-                } catch (Exception e) {
-                    continue; // ✅ skip unreadable images
-                }
-
+                try { buffered = image.getImage(); }
+                catch (Exception e) { continue; }
                 if (buffered == null) continue;
 
                 try {
                     int newWidth  = buffered.getWidth()  / 2;
                     int newHeight = buffered.getHeight() / 2;
 
-                    // ✅ Use TYPE_INT_RGB to avoid alpha channel issues
                     BufferedImage resized = new BufferedImage(
                             newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
-
                     Graphics2D g = resized.createGraphics();
                     g.drawImage(buffered, 0, 0, newWidth, newHeight, null);
                     g.dispose();
-                    buffered.flush(); // ✅ free original image RAM immediately
+                    buffered.flush();
 
                     ByteArrayOutputStream imgOut = new ByteArrayOutputStream();
                     ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
@@ -218,18 +206,13 @@ public class PdfService {
                         writer.write(null, new IIOImage(resized, null, null), param);
                     }
                     writer.dispose();
-                    resized.flush(); // ✅ free resized image RAM
+                    resized.flush();
 
                     byte[] newBytes = imgOut.toByteArray();
-
                     if (newBytes.length < image.getStream().getLength()) {
-                        PDImageXObject compressed =
-                                JPEGFactory.createFromByteArray(document, newBytes);
-                        resources.put(name, compressed);
+                        resources.put(name, JPEGFactory.createFromByteArray(document, newBytes));
                     }
-
                 } catch (Exception e) {
-                    // ✅ skip any image that fails — don't crash whole PDF
                     System.out.println("Skipping image: " + e.getMessage());
                 }
             }
@@ -237,7 +220,10 @@ public class PdfService {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         document.save(out);
-        return out.toByteArray();
+        byte[] compressed = out.toByteArray();
+
+        // ✅ return original if compression gave no benefit
+        return compressed.length < original.length ? compressed : original;
     }
 }
 

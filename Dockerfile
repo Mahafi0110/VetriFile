@@ -11,11 +11,22 @@ RUN apt-get update && \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Verify both installed during build
+RUN ffmpeg -version && libreoffice --version
+
 COPY . .
 
 RUN mvn clean package -DskipTests
 
 EXPOSE 8080
 
-# ✅ Memory limit set here in CMD (not in application.properties)
-CMD ["java", "-Xmx384m", "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
+# ✅ Optimized JVM flags for 512MB Render free tier
+CMD ["java", \
+     "-Xmx420m", \
+     "-Xms64m", \
+     "-XX:+UseG1GC", \
+     "-XX:MaxGCPauseMillis=200", \
+     "-XX:+UseStringDeduplication", \
+     "-XX:MetaspaceSize=64m", \
+     "-XX:MaxMetaspaceSize=128m", \
+     "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
