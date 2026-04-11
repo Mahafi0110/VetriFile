@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
@@ -29,34 +29,38 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // Skip public paths
+        // Skip public/static paths
         if (isPublicPath(path)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Get token from cookie
+        // Get JWT token from cookie
         String token = getTokenFromCookie(request);
 
         if (token != null) {
             try {
+                // Validate token
                 if (jwtUtil.validateToken(token)) {
                     String email = jwtUtil.getEmailFromToken(token);
+
+                    // Set authentication in Spring Security
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
-                                    email, null, new ArrayList<>()
+                                    email,
+                                    null,
+                                    Collections.emptyList()
                             );
                     SecurityContextHolder.getContext().setAuthentication(auth);
+                } else {
+                    // Token invalid -> clear cookie
+                    clearCookie(response);
                 }
             } catch (Exception e) {
-                // Bad token — clear cookie
-                // Spring Security's exceptionHandling will redirect to /login
                 clearCookie(response);
             }
         }
 
-        // Always continue — Spring Security's exceptionHandling
-        // handles the redirect to /login if not authenticated
         filterChain.doFilter(request, response);
     }
 
@@ -74,16 +78,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private String getTokenFromCookie(HttpServletRequest request) {
         if (request.getCookies() == null) return null;
-        for (Cookie c : request.getCookies()) {
-            if ("vetri_token".equals(c.getName())) return c.getValue();
+        for (Cookie cookie : request.getCookies()) {
+            if ("vetri_token".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
         }
         return null;
     }
 
     private void clearCookie(HttpServletResponse response) {
-        Cookie dead = new Cookie("vetri_token", "");
-        dead.setMaxAge(0);
-        dead.setPath("/");
-        response.addCookie(dead);
+        Cookie cookie = new Cookie("vetri_token", "");
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0); // remove cookie
+        response.addCookie(cookie);
     }
 }

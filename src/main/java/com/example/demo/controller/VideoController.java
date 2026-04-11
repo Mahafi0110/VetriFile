@@ -1,148 +1,116 @@
 package com.example.demo.controller;
 
 import com.example.demo.service.VideoService;
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import java.io.*;
 
 @RestController
 @RequestMapping("/api/video")
-@RequiredArgsConstructor
 public class VideoController {
 
-    private final VideoService videoService;
+    @Autowired
+    private VideoService videoService;
 
-    // ── CONVERT VIDEO ─────────────────────────
-    @PostMapping("/convert")
-    public ResponseEntity<ByteArrayResource> convertVideo(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("format") String format) {
-        try {
-            byte[] result = videoService.convertVideo(file, format);
-            return buildDownloadResponse(
-                result,
-                "converted_" + file.getOriginalFilename()
-                    .replaceAll("\\.[^.]+$", "") + "." + format,
-                "video/" + format
-            );
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
+    // ── COMPRESS VIDEO ──────────────────────────────────────────────────────────
+    @PostMapping(value = "/compress", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<StreamingResponseBody> compressVideo(
+            @RequestPart("file") MultipartFile file,
+            @RequestParam(defaultValue = "28") int crf,
+            @RequestParam(required = false) String resolution,
+            @RequestParam(required = false) String format
+    ) throws Exception {
 
-    // ── TRIM VIDEO ────────────────────────────
-    @PostMapping("/trim")
-    public ResponseEntity<ByteArrayResource> trimVideo(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("start") double start,
-            @RequestParam("end") double end) {
-        try {
-            byte[] result = videoService.trimVideo(file, start, end);
-            return buildDownloadResponse(
-                result,
-                "trimmed_" + file.getOriginalFilename(),
-                "video/mp4"
-            );
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
+        // Save ONCE here — stream already consumed after this
+        File input  = videoService.saveToTempFile(file);
+        File output = videoService.compressVideo(input, crf, resolution, format);
 
-    // ── EXTRACT AUDIO FROM VIDEO ──────────────
-    // ✅ FIXED: added format, bitrate, sampleRate, channels params
-    @PostMapping("/extract-audio")
-    public ResponseEntity<ByteArrayResource> extractAudio(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "format",     defaultValue = "mp3")   String format,
-            @RequestParam(value = "bitrate",    defaultValue = "192")   String bitrate,
-            @RequestParam(value = "sampleRate", defaultValue = "44100") String sampleRate,
-            @RequestParam(value = "channels",   defaultValue = "2")     String channels) {
-        try {
-            byte[] result = videoService.extractAudio(
-                file, format, bitrate, sampleRate, channels
-            );
-            return buildDownloadResponse(
-                result,
-                "audio_" + file.getOriginalFilename()
-                    .replaceAll("\\.[^.]+$", "") + "." + format,
-                "audio/" + format
-            );
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    // ── MERGE VIDEOS ──────────────────────────
-    @PostMapping("/merge")
-    public ResponseEntity<ByteArrayResource> mergeVideos(
-            @RequestParam("files") MultipartFile[] files) {
-        try {
-            byte[] result = videoService.mergeVideos(files);
-            return buildDownloadResponse(
-                result,
-                "merged_video.mp4",
-                "video/mp4"
-            );
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    // ── COMPRESS VIDEO ────────────────────────
-    @PostMapping("/compress")
-    public ResponseEntity<ByteArrayResource> compressVideo(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "level",      defaultValue = "medium")   String level,
-            @RequestParam(value = "crf",        defaultValue = "28")       int crf,
-            @RequestParam(value = "resolution", defaultValue = "original") String resolution,
-            @RequestParam(value = "format",     defaultValue = "mp4")      String format) {
-        try {
-            byte[] result = videoService.compressVideo(
-                file, level, crf, resolution, format
-            );
-            return buildDownloadResponse(
-                result,
-                "compressed_" + file.getOriginalFilename()
-                    .replaceAll("\\.[^.]+$", "") + "." + format,
-                "video/" + format
-            );
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    // ── HELPER ───────────────────────────────
-    private ResponseEntity<ByteArrayResource> buildDownloadResponse(
-            byte[] data, String filename, String contentType) {
-        ByteArrayResource resource = new ByteArrayResource(data);
-        return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + filename + "\"")
-            .contentType(MediaType.parseMediaType(contentType))
-            .contentLength(data.length)
-            .body(resource);
-    }
-
-    // ── HEALTH CHECK FOR FFMPEG ───────────────
-    @GetMapping("/health/ffmpeg")
-    public ResponseEntity<String> checkFFmpeg() {
-        try {
-            ProcessBuilder pb = new ProcessBuilder("ffmpeg", "-version");
-            pb.redirectErrorStream(true);
-            Process process = pb.start();
-            boolean completed = process.waitFor(5, java.util.concurrent.TimeUnit.SECONDS);
-            if (completed && process.exitValue() == 0) {
-                return ResponseEntity.ok("FFmpeg is available");
-            } else {
-                return ResponseEntity.status(503).body("FFmpeg check failed");
+        StreamingResponseBody stream = outputStream -> {
+            try (InputStream in = new FileInputStream(output)) {
+                byte[] buffer = new byte[8 * 1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                // ✅ Cleanup AFTER stream finishes — not before
+                input.delete();
+                output.delete();
             }
-        } catch (Exception e) {
-            return ResponseEntity.status(503).body("FFmpeg not found: " + e.getMessage());
-        }
+        };
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=compressed.mp4")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(output.length())
+                .body(stream);
+    }
+
+    // ── EXTRACT AUDIO ───────────────────────────────────────────────────────────
+    @PostMapping("/extract-audio")
+    public ResponseEntity<StreamingResponseBody> extractAudio(
+            @RequestParam("file") MultipartFile file
+    ) throws Exception {
+
+        // Save ONCE here — pass File to service (not MultipartFile)
+        File input  = videoService.saveToTempFile(file);
+        File output = videoService.extractAudio(input, "mp3", "128", "44100", "2");
+
+        StreamingResponseBody stream = outputStream -> {
+            try (InputStream in = new FileInputStream(output)) {
+                byte[] buffer = new byte[8 * 1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                input.delete();
+                output.delete();
+            }
+        };
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=audio.mp3")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(output.length())
+                .body(stream);
+    }
+
+    // ── TRIM VIDEO ──────────────────────────────────────────────────────────────
+    @PostMapping("/trim")
+    public ResponseEntity<StreamingResponseBody> trimVideo(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam double start,
+            @RequestParam double end
+    ) throws Exception {
+
+        // Save ONCE here — pass File to service (not MultipartFile)
+        File input  = videoService.saveToTempFile(file);
+        File output = videoService.trimVideo(input, start, end);
+
+        StreamingResponseBody stream = outputStream -> {
+            try (InputStream in = new FileInputStream(output)) {
+                byte[] buffer = new byte[8 * 1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                input.delete();
+                output.delete();
+            }
+        };
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=trimmed.mp4")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(output.length())
+                .body(stream);
     }
 }

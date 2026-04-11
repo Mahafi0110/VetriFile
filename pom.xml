@@ -90,12 +90,17 @@
             <version>1.18.36</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+</dependency>
+
 
         <!-- Apache PDFBox -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>3.0.1</version>
+            <version>2.0.30</version>
         </dependency>
         <dependency>
     <groupId>org.sejda.imageio</groupId>
@@ -116,11 +121,6 @@
     <scope>runtime</scope>
 </dependency>
 <!-- Apache POI – core Word (.docx) support -->
-<dependency>
-    <groupId>org.apache.poi</groupId>
-    <artifactId>poi-ooxml</artifactId>
-    <version>5.2.5</version>
-</dependency>
  
 <!-- xwpf-converter – Word → PDF conversion -->
 <dependency>
@@ -134,6 +134,21 @@
     <groupId>com.itextpdf</groupId>
     <artifactId>itextpdf</artifactId>
     <version>5.5.13.3</version>
+</dependency>
+<dependency>
+     <groupId>org.apache.poi</groupId>
+     <artifactId>poi-ooxml</artifactId>
+     <version>5.2.5</version>
+   </dependency>
+   <dependency>
+     <groupId>org.apache.poi</groupId>
+     <artifactId>poi-scratchpad</artifactId>  <!-- for .doc HWPF -->
+     <version>5.2.5</version>
+   </dependency>
+   <dependency>
+    <groupId>me.paulschwarz</groupId>
+    <artifactId>spring-dotenv</artifactId>
+    <version>4.0.0</version>
 </dependency>
  
 

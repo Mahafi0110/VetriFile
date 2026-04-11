@@ -412,7 +412,12 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 100%;
     }
+    .file-info-box div {
+    min-width: 0;
+}
+
 
     .file-info-size {
       font-size: .75rem;
@@ -527,6 +532,7 @@
       gap: 8px;
       align-items: center;
       margin-bottom: 4px;
+      width:100%;
     }
 
     .dim-input {
@@ -540,6 +546,7 @@
       color: var(--heading);
       outline: none;
       transition: border-color .2s;
+      min-width:0;
     }
 
     .dim-input:focus {
@@ -556,6 +563,8 @@
       color: var(--heading);
       outline: none;
       cursor: pointer;
+      flex:0 0 80px;
+      max-width: 80px;
     }
 
     .target-hint {
@@ -1007,28 +1016,46 @@
       color: #DB2777;
     }
 
-    @media (max-width:767.98px) {
-      .tool-main {
-        padding: 20px 0 48px;
-      }
+  @media (max-width:767.98px) {
+  .tool-main {
+    padding: 20px 0 48px;
+  }
 
-      .settings-card {
-        margin-bottom: 16px;
-      }
+  .settings-card {
+    margin-bottom: 16px;
+  }
 
-      .modal-box {
-        padding: 36px 24px 32px;
-      }
+  .modal-box {
+    padding: 36px 24px 32px;
+  }
 
-      .video-info-row {
-        gap: 6px;
-      }
+  /* ✅ FIX STARTS HERE */
+  .video-info-row {
+    display: flex;
+    flex-wrap: wrap;   /* 🔥 allow wrapping */
+    gap: 8px;
+    justify-content: center;
+  }
 
-      .v-info-card {
-        min-width: 60px;
-        padding: 8px;
-      }
-    }
+  .v-info-card {
+    flex: 1 1 calc(50% - 8px); /* 🔥 2 per row */
+    min-width: 0;              /* 🔥 prevents overflow */
+    padding: 10px;
+  }
+
+  .v-info-arrow {
+    display: none; /* 🔥 hide arrow in mobile */
+  }
+
+  /* prevent text overflow */
+  .v-info-val {
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
   </style>
 </head>
 
@@ -1547,8 +1574,7 @@ function loadVideo() {
     );
     document.getElementById('infoOrigSize').textContent =
       formatSize(currentFile.size);
-    document.getElementById('infoEstSize').textContent =
-      formatSize(est);
+    document.getElementById('infoEstSize').textContent ='Processing...';
     document.getElementById('infoResolution').textContent =
       res === 'original' ? 'Original' : res + 'p';
     document.getElementById('infoSaving').textContent =

@@ -418,7 +418,13 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 100%;
         }
+
+        .file-info-box div {
+            min-width: 0;
+        }
+
 
         .file-info-size {
             font-size: .75rem;
@@ -535,13 +541,17 @@
         .counter-wrap {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             margin-bottom: 6px;
+            width: 100%;
+            /* take full container width */
+            box-sizing: border-box;
         }
 
         .counter-btn {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
             border: 1.5px solid var(--accent-2);
             border-radius: 8px;
             background: var(--white);
@@ -553,6 +563,7 @@
             font-size: 1rem;
             transition: all .2s;
             flex-shrink: 0;
+
         }
 
         .counter-btn:hover {
@@ -561,17 +572,19 @@
         }
 
         .counter-input {
-            flex: 1;
-            padding: 8px;
-            font-size: 1.1rem;
+            flex: 1 1 auto;
+            /* take remaining space, shrink if needed */
+            min-width: 0;
+            /* critical to prevent input forcing overflow */
+            padding: 6px 8px;
+            font-size: 1rem;
             font-weight: 700;
-            font-family: 'Poppins', sans-serif;
+            text-align: center;
             border: 1.5px solid var(--accent-2);
             border-radius: 8px;
-            text-align: center;
             outline: none;
             color: var(--heading);
-            transition: border-color .2s;
+            transition: border-color 0.2s;
         }
 
         .counter-input:focus {

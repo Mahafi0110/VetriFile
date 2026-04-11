@@ -17,13 +17,31 @@ public class JwtUtil {
     @Value("${app.jwt.expiration}")
     private long jwtExpiration;
 
-    // Generate token from email
+    
+
+    // Existing
     public String generateToken(String email) {
+        return generateToken(email, jwtExpiration);
+    }
+
+    // Generate token from email
+    // public String generateToken(String email) {
+    // Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    // return Jwts.builder()
+    // .setSubject(email)
+    // .setIssuedAt(new Date())
+    // .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+    // .signWith(key, SignatureAlgorithm.HS256)
+    // .compact();
+    // }
+   
+       // Token with custom expiration (for Remember Me)
+    public String generateToken(String email, long expirationMs) {
         Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -38,6 +56,7 @@ public class JwtUtil {
                 .getBody()
                 .getSubject();
     }
+    
 
     // Validate token
     public boolean validateToken(String token) {

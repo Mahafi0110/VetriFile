@@ -25,8 +25,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse> register(
             @Valid @RequestBody RegisterRequest request,
             HttpServletRequest httpRequest,
-            HttpServletResponse response
-    ) {
+            HttpServletResponse response) {
         try {
             AuthResponse authResponse = authService.register(request);
             setJwtCookie(response, authResponse.getToken(),
@@ -43,8 +42,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest,
-            HttpServletResponse response
-    ) {
+            HttpServletResponse response) {
         try {
             AuthResponse authResponse = authService.login(request);
             int maxAge = request.isRememberMe() ? 30 * 24 * 60 * 60 : -1;
@@ -84,12 +82,26 @@ public class AuthController {
     }
 
     private void setJwtCookie(HttpServletResponse response,
-                               String token, int maxAge, boolean secure) {
+            String token, int maxAge, boolean secure) {
         Cookie cookie = new Cookie("vetri_token", token);
-        cookie.setHttpOnly(true);   // JS cannot read it
-        cookie.setPath("/");        // sent on every request
+        cookie.setHttpOnly(true); // JS cannot read it
+        cookie.setPath("/"); // sent on every request
         cookie.setMaxAge(maxAge);
-        cookie.setSecure(secure);   // true on HTTPS (Render), false on localhost
+        cookie.setSecure(secure); // true on HTTPS (Render), false on localhost
         response.addCookie(cookie);
+    }
+
+   @PostMapping("/forgot-password")
+public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+    authService.forgotPassword(email);
+    return ResponseEntity.ok("If the email exists, a reset link has been sent");
+}
+
+
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String token,
+            @RequestParam String newPassword) {
+        authService.resetPassword(token, newPassword);
+        return "Password updated successfully";
     }
 }

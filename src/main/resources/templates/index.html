@@ -790,7 +790,7 @@
         <div class="col-6 col-md-2 offset-md-1 footer-col">
           <h6>Product</h6>
           <a href="/all-tools">All Tools</a>
-          <a href="/features">Features</a>
+          <a href="/Feature">Features</a>
           <a href="#">Pricing</a>
         </div>
         <div class="col-6 col-md-2 footer-col">
@@ -819,189 +819,193 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    (function () {
-      const raw = sessionStorage.getItem('vetri_user');
-      const user = raw ? JSON.parse(raw) : null;
-      const navRight = document.getElementById('navRight');
+  <script src="/js/vetri-file-helper.js"></script>
+ <script>
+/* ── USER NAVBAR ───────────────────────────── */
+(function () {
+  const raw = sessionStorage.getItem('vetri_user');
+  const user = raw ? JSON.parse(raw) : null;
+  const navRight = document.getElementById('navRight');
 
-      if (user) {
-        const initials = user.name
-          ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-          : (user.email ? user.email[0].toUpperCase() : 'U');
-        const firstName = user.name ? user.name.split(' ')[0] : user.email;
+  if (user) {
+    const initials = user.name
+      ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+      : (user.email ? user.email[0].toUpperCase() : 'U');
 
-        navRight.innerHTML = `
-          <div class="dropdown">
-            <button class="profile-btn" onclick="toggleDropdown()">
-              <div class="avatar">${initials}</div>
-              <span class="profile-name">${firstName}</span>
-              <i class="bi bi-chevron-down" style="font-size:.7rem;color:var(--sub)"></i>
-            </button>
-            <div class="dropdown-menu-custom" id="profileMenu">
-              <div class="dropdown-header">
-                <div class="avatar-lg">${initials}</div>
-                <div>
-                  <div class="dh-name">${user.name || ''}</div>
-                  <div class="dh-email">${user.email || ''}</div>
-                </div>
-              </div>
-              <button class="dropdown-item-custom logout" onclick="logout()">
-                <i class="bi bi-box-arrow-right"></i> Sign Out
-              </button>
+    const firstName = user.name ? user.name.split(' ')[0] : user.email;
+
+    navRight.innerHTML = `
+      <div class="dropdown">
+        <button class="profile-btn" onclick="toggleDropdown()">
+          <div class="avatar">${initials}</div>
+          <span class="profile-name">${firstName}</span>
+          <i class="bi bi-chevron-down" style="font-size:.7rem;color:var(--sub)"></i>
+        </button>
+        <div class="dropdown-menu-custom" id="profileMenu">
+          <div class="dropdown-header">
+            <div class="avatar-lg">${initials}</div>
+            <div>
+              <div class="dh-name">${user.name || ''}</div>
+              <div class="dh-email">${user.email || ''}</div>
             </div>
-          </div>`;
-      } else {
-        navRight.innerHTML = `
-          <div style="display:flex;align-items:center;gap:10px;">
-            <a href="/login" style="font-size:.88rem;font-weight:600;color:#3B82F6;text-decoration:none;padding:7px 14px;">Login</a>
-            <a href="/register" style="background:linear-gradient(135deg,#1E3A8A,#3B82F6);color:#fff;padding:9px 22px;border-radius:50px;font-family:'Poppins',sans-serif;font-weight:600;font-size:.88rem;text-decoration:none;">Get Started</a>
-          </div>`;
-      }
-    })();
+          </div>
+          <button class="dropdown-item-custom logout" onclick="logout()">
+            <i class="bi bi-box-arrow-right"></i> Sign Out
+          </button>
+        </div>
+      </div>`;
+  } else {
+    navRight.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <a href="/login" style="font-size:.88rem;font-weight:600;color:#3B82F6;text-decoration:none;padding:7px 14px;">Login</a>
+        <a href="/register" style="background:linear-gradient(135deg,#1E3A8A,#3B82F6);color:#fff;padding:9px 22px;border-radius:50px;font-weight:600;font-size:.88rem;text-decoration:none;">Get Started</a>
+      </div>`;
+  }
+})();
 
-    function toggleDropdown() {
-      document.getElementById('profileMenu').classList.toggle('open');
-    }
+/* ── DROPDOWN ───────────────────────────── */
+function toggleDropdown() {
+  document.getElementById('profileMenu').classList.toggle('open');
+}
 
-    document.addEventListener('click', function (e) {
-      const menu = document.getElementById('profileMenu');
-      if (menu && !e.target.closest('.dropdown')) {
-        menu.classList.remove('open');
-      }
+document.addEventListener('click', function (e) {
+  const menu = document.getElementById('profileMenu');
+  if (menu && !e.target.closest('.dropdown')) {
+    menu.classList.remove('open');
+  }
+});
+
+/* ── LOGOUT ───────────────────────────── */
+function logout() {
+  fetch('/api/auth/logout', { method: 'POST' })
+    .finally(() => {
+      sessionStorage.removeItem('vetri_user');
+      window.location.href = '/login';
     });
+}
 
-    function logout() {
-      fetch('/api/auth/logout', { method: 'POST' })
-        .finally(() => {
-          sessionStorage.removeItem('vetri_user');
-          window.location.href = '/login';
-        });
-    }
+/* ── DRAG & DROP ───────────────────────── */
+const card = document.getElementById('uploadCard');
+const input = document.getElementById('fileInput');
 
-    /* ── Drag & Drop ── */
-    const card = document.getElementById('uploadCard');
-    const input = document.getElementById('fileInput');
-    card.addEventListener('dragover', e => { e.preventDefault(); card.style.borderColor = '#3B82F6'; });
-    card.addEventListener('dragleave', () => { card.style.borderColor = ''; });
-    card.addEventListener('drop', e => {
-      e.preventDefault(); card.style.borderColor = '';
-      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-    });
-    card.addEventListener('click', e => { if (!e.target.closest('.btn-choose')) input.click(); });
-    input.addEventListener('change', () => { if (input.files.length) handleFile(input.files[0]); });
+card.addEventListener('dragover', e => {
+  e.preventDefault();
+  card.style.borderColor = '#3B82F6';
+});
 
-    // function handleFile(file) {
-    //   sessionStorage.setItem('vetri_file', JSON.stringify({ name: file.name, size: file.size, type: file.type }));
-    //   const reader = new FileReader();
-    //   reader.onload = e => {
-    //     sessionStorage.setItem('vetri_file_data', e.target.result);
-    //     window.location.href = '/file-tools';
-    //   };
-    //   reader.readAsDataURL(file);
-    // }
-    /* ── Handle uploaded file ── */
-    /* ═══════════════════════════════════════════════
-          REPLACE everything from the first comment block
-          all the way to the pill event listeners with
-          ONLY this code in your index.html script tag
-       ═══════════════════════════════════════════════ */
+card.addEventListener('dragleave', () => {
+  card.style.borderColor = '';
+});
+
+card.addEventListener('drop', e => {
+  e.preventDefault();
+  card.style.borderColor = '';
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+
+card.addEventListener('click', e => {
+  if (!e.target.closest('.btn-choose')) input.click();
+});
+
+input.addEventListener('change', () => {
+  if (input.files.length) handleFile(input.files[0]);
+});
+
+/* ── HANDLE FILE (MAIN LOGIC) ───────────── */
 function handleFile(file) {
+
+  // Clear old data
   sessionStorage.removeItem('vetri_file');
   sessionStorage.removeItem('vetri_file_data');
   sessionStorage.removeItem('vetri_storage_type');
 
+  // Store metadata
   sessionStorage.setItem('vetri_file', JSON.stringify({
     name: file.name,
     size: file.size,
     type: file.type
   }));
 
-  // ✅ ALWAYS use IndexedDB for videos
-  if (file.type.startsWith('video/')) {
+  // 🔥 RULES:
+  // Video OR >1.5MB → IndexedDB
+  // Others → sessionStorage
 
-    const req = indexedDB.open('VetriFilesDB', 1);
-
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('files')) {
-        db.createObjectStore('files', { keyPath: 'id' });
-      }
-    };
-
-    req.onerror = () => storeAsBase64(file);
-
-    req.onsuccess = e => {
-      const db = e.target.result;
-      const tx = db.transaction('files', 'readwrite');
-      tx.objectStore('files').put({ id: 'current_file', file: file });
-
-      tx.oncomplete = () => {
-        db.close();
-        sessionStorage.setItem('vetri_storage_type', 'indexeddb');
-        window.location.href = '/file-tools';
-      };
-
-      tx.onerror = () => {
-        db.close();
-        storeAsBase64(file);
-      };
-    };
-
+  if (file.type.startsWith('video/') || file.size > 1.5 * 1024 * 1024) {
+    storeInIndexedDB(file);
   } else {
-    // small files (pdf/image/audio)
     storeAsBase64(file);
   }
 }
 
+/* ── STORE IN INDEXEDDB ─────────────────── */
+function storeInIndexedDB(file) {
+  const req = indexedDB.open('VetriFilesDB', 1);
 
-    function storeAsBase64(file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        try {
-          sessionStorage.setItem('vetri_file_data', e.target.result);
-          sessionStorage.setItem('vetri_storage_type', 'session');
-        } catch (err) {
-          sessionStorage.setItem('vetri_storage_type', 'session');
-        }
-        window.location.href = '/file-tools';
-      };
-      reader.onerror = () => alert('Could not read file. Please try again.');
-      reader.readAsDataURL(file);
+  req.onupgradeneeded = e => {
+    const db = e.target.result;
+    if (!db.objectStoreNames.contains('files')) {
+      db.createObjectStore('files', { keyPath: 'id' });
     }
+  };
 
-    document.querySelectorAll('.pill').forEach(p => {
-      p.addEventListener('click', e => {
-        e.preventDefault();
-        document.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
-        p.classList.add('active');
-      });
+  req.onerror = () => {
+    console.warn("IndexedDB failed, fallback to base64");
+    storeAsBase64(file);
+  };
+
+  req.onsuccess = e => {
+    const db = e.target.result;
+    const tx = db.transaction('files', 'readwrite');
+
+    tx.objectStore('files').put({
+      id: 'current_file',
+      file: file
     });
 
-    function readAsBase64(file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        try {
-          sessionStorage.setItem('vetri_file_data', e.target.result);
-          sessionStorage.setItem('vetri_storage_type', 'session');
-        } catch (err) {
-          // sessionStorage full (file too large) — still go to file-tools
-          // the tool page will handle missing data gracefully
-          sessionStorage.setItem('vetri_storage_type', 'session');
-        }
-        window.location.href = '/file-tools';
-      };
-      reader.onerror = () => alert('Could not read file. Please try again.');
-      reader.readAsDataURL(file);
+    tx.oncomplete = () => {
+      db.close();
+      sessionStorage.setItem('vetri_storage_type', 'indexeddb');
+      window.location.href = '/file-tools';
+    };
+
+    tx.onerror = () => {
+      db.close();
+      storeAsBase64(file);
+    };
+  };
+}
+
+/* ── STORE AS BASE64 ───────────────────── */
+function storeAsBase64(file) {
+  const reader = new FileReader();
+
+  reader.onload = e => {
+    try {
+      sessionStorage.setItem('vetri_file_data', e.target.result);
+      sessionStorage.setItem('vetri_storage_type', 'session');
+    } catch (err) {
+      console.warn("sessionStorage full, switching to IndexedDB");
+      storeInIndexedDB(file);
+      return;
     }
-    document.querySelectorAll('.pill').forEach(p => {
-      p.addEventListener('click', e => {
-        e.preventDefault();
-        document.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
-        p.classList.add('active');
-      });
-    });
-  </script>
+
+    window.location.href = '/file-tools';
+  };
+
+  reader.onerror = () => alert('Could not read file.');
+  reader.readAsDataURL(file);
+}
+
+/* ── FILTER PILLS ───────────────────────── */
+document.querySelectorAll('.pill').forEach(p => {
+  p.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+  });
+});
+</script>
+
   
 </body>
 

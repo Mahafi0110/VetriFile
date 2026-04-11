@@ -31,7 +31,8 @@ public class PageController {
     public String fileTools() {
         return "file-tools";
     }
-     @GetMapping("/Feature")
+
+    @GetMapping("/Feature")
     public String Feature() {
         return "Feature";
     }
@@ -182,4 +183,18 @@ public class PageController {
     public String toolExtractAudioVideo() {
         return "tool-extract-audio-video";
     }
+
+    @GetMapping("/tool-word-pdf")
+    public String wordPdfPage() {
+        return "tool-word-pdf";
+    }
+    @GetMapping("/tool-word-html")
+    public String wordHtmlPage() {
+        return "tool-word-html";
+    }
+    @GetMapping("/tool-word-text")
+    public String wordTextPage() {
+        return "tool-word-text";
+    }
+
 }

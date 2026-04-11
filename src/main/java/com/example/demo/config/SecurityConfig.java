@@ -22,49 +22,49 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable())
 
-            .authorizeHttpRequests(auth -> auth
-                // Static files — always public
-                .requestMatchers(
-                    "/css/**", "/js/**", "/images/**",
-                    "/fonts/**", "/webjars/**", "/favicon.ico"
-                ).permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        // Static files — always public
+                        .requestMatchers(
+                                "/css/**", "/js/**", "/images/**",
+                                "/fonts/**", "/webjars/**", "/favicon.ico")
+                        .permitAll()
 
-                // Auth pages — public
-                .requestMatchers("/login", "/register").permitAll()
+                        // Auth pages — public
+                        .requestMatchers("/login", "/register").permitAll()
 
-                // Auth API — public
-                .requestMatchers(
-                    "/api/auth/login",
-                    "/api/auth/register",
-                    "/api/auth/logout"
-                ).permitAll()
+                        // Auth API — public
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/logout",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password")
+                        .permitAll()
 
-                // Everything else — must be logged in
-                .anyRequest().authenticated()
-            )
+                        // Everything else — must be logged in
+                        .anyRequest().authenticated())
 
-            .formLogin(form -> form.disable())
-            .httpBasic(basic -> basic.disable())
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
 
-            // ── KEY FIX: tell Spring what to do when not authenticated ──
-            // For page requests → redirect to /login
-            // For API requests → return 401 JSON
-            .exceptionHandling(ex -> ex
-                .authenticationEntryPoint((request, response, authException) -> {
-                    String path = request.getServletPath();
-                    if (path.startsWith("/api/")) {
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.setContentType("application/json");
-                        response.getWriter().write("{\"success\":false,\"message\":\"Unauthorized\"}");
-                    } else {
-                        response.sendRedirect("/login");
-                    }
-                })
-            )
+                // ── KEY FIX: tell Spring what to do when not authenticated ──
+                // For page requests → redirect to /login
+                // For API requests → return 401 JSON
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            String path = request.getServletPath();
+                            if (path.startsWith("/api/")) {
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                response.setContentType("application/json");
+                                response.getWriter().write("{\"success\":false,\"message\":\"Unauthorized\"}");
+                            } else {
+                                response.sendRedirect("/login");
+                            }
+                        }))
 
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

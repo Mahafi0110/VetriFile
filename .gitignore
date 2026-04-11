@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+# ── Secrets (never push these) ──
+.env
+*.env
+application-local.properties
+# ── H2 Database files (never push these) ──
+data/
+*.mv.db
+*.trace.db

@@ -234,6 +234,10 @@
             background: linear-gradient(135deg, #1E3A8A, #3B82F6);
         }
 
+        .fi-word {
+            background: linear-gradient(135deg, #4338CA, #8B5CF6);
+        }
+
         .fi-default {
             background: linear-gradient(135deg, #4B5563, #9CA3AF);
         }
@@ -405,6 +409,20 @@
             background: linear-gradient(135deg, #BE123C, #FB923C);
         }
 
+        /* word tools-greens */
+        .tac-indigo-1 {
+            background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+        }
+
+        .tac-indigo-2 {
+            background: linear-gradient(135deg, #1E40AF, #6366F1);
+        }
+
+        .tac-indigo-3 {
+            background: linear-gradient(135deg, #4338CA, #8B5CF6);
+        }
+
+
         .tac-name {
             font-family: 'Poppins', sans-serif;
             font-size: 1rem;
@@ -559,7 +577,7 @@
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"><a class="nav-link" href="/all-tools">Tools</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Feature">Features</a></li>
                 </ul>
                 <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
                     <a href="/login" class="nav-link btn-login">Login</a>
@@ -667,8 +685,8 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-   <script>
+    <script src="/js/vetri-file-helper.js"></script>
+    <script>
         /* Same IndexedDB as index.html + vetri-file-helper.js */
         const VETRI_IDB_NAME = 'VetriFilesDB';
         const VETRI_IDB_STORE = 'files';
@@ -704,6 +722,14 @@
                 { icon: 'bi-scissors', color: 'tac-pink-2', name: 'Trim Video', desc: 'Click to get started', page: '/tool-trim-video' },
                 { icon: 'bi-music-note-beamed', color: 'tac-pink-3', name: 'Extract Audio', desc: 'Click to get started', page: '/tool-extract-audio-video' },
             ],
+            word: [
+                { icon: 'bi-file-earmark-pdf-fill', color: 'tac-indigo-1', name: 'Word to PDF', desc: 'Convert .doc / .docx to PDF', page: '/tool-word-pdf' },
+                { icon: 'bi-file-earmark-code-fill', color: 'tac-indigo-2', name: 'Word to HTML', desc: 'Export document as HTML page', page: '/tool-word-html' },
+                { icon: 'bi-file-earmark-text-fill', color: 'tac-indigo-3', name: 'Extract Text', desc: 'Pull plain text from Word file', page: '/tool-word-text' },
+                //     { icon: 'bi-bar-chart-fill', color: 'tac-indigo-4', name: 'Word Count', desc: 'Words, chars & paragraph statistics', page: '/tool-word-count' },
+                //     { icon: 'bi-info-circle-fill', color: 'tac-indigo-5', name: 'Doc Metadata', desc: 'Author, title, dates & more', page: '/tool-word-meta' },
+                //     { icon: 'bi-intersect', color: 'tac-indigo-1', name: 'Merge Docs', desc: 'Combine multiple Word files into one', page: '/tool-word-merge' },
+            ],
         };
 
         function getExtension(fileName) {
@@ -718,6 +744,15 @@
             ext = (ext || '').toLowerCase();
 
             if (mime === 'application/pdf' || ext === 'pdf') return 'pdf';
+
+            // Word documents
+            if (
+                mime === 'application/msword' ||
+                mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                mime === 'application/vnd.ms-word' ||
+                ext === 'doc' || ext === 'docx'
+            ) return 'word';
+
 
             if (mime.startsWith('image/')) return 'image';
             if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'svgz', 'tiff', 'tif', 'ico', 'avif'].includes(ext)) return 'image';
@@ -741,10 +776,12 @@
 
         function getCategoryMeta(cat) {
             const map = {
+
                 pdf: { iconClass: 'bi-file-earmark-pdf-fill', boxClass: 'fi-pdf', label: 'application/pdf' },
                 image: { iconClass: 'bi-file-earmark-image-fill', boxClass: 'fi-image', label: 'image file' },
                 audio: { iconClass: 'bi-file-earmark-music-fill', boxClass: 'fi-audio', label: 'audio file' },
                 video: { iconClass: 'bi-file-earmark-play-fill', boxClass: 'fi-video', label: 'video file' },
+                word: { iconClass: 'bi-file-earmark-word-fill', boxClass: 'fi-word', label: 'Word document' },
             };
             return map[cat] || map.pdf;
         }
@@ -867,7 +904,7 @@
                     .catch(() => { /* keep sessionStorage-based UI */ });
             }
         });
-   </script>
+    </script>
 
 </body>
 

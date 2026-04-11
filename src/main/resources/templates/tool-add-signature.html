@@ -414,7 +414,13 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 100%;
         }
+
+        .file-info-box div {
+            min-width: 0;
+        }
+
 
         .file-info-size {
             font-size: .75rem;
@@ -1234,6 +1240,22 @@
                 width: 260px;
             }
         }
+
+        .pdf-page-content {
+            position: relative;
+        }
+
+        #pdfViewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        .sig-overlay {
+            position: absolute;
+            width: 150px;
+            height: 50px;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -1507,7 +1529,10 @@
                                 <!-- PDF page simulation -->
                                 <div class="pdf-page" id="pdfPage" style="display:none">
                                     <div class="pdf-page-content">
-                                        <div class="pdf-lines">
+                                        <iframe id="pdfViewer" style="width:100%; height:100%; border:none;">
+                                        </iframe>
+
+                                        <!-- <div class="pdf-lines">
                                             <div class="pdf-line w-80"></div>
                                             <div class="pdf-line w-60"></div>
                                             <div class="pdf-line w-90"></div>
@@ -1516,7 +1541,7 @@
                                             <div class="pdf-line w-80"></div>
                                             <div class="pdf-line w-65"></div>
                                             <div class="pdf-line w-75"></div>
-                                        </div>
+                                        </div> -->
                                         <!-- Signature overlay -->
                                         <div class="sig-overlay" id="sigOverlay">
                                             <canvas id="sigPreviewCanvas" width="200" height="60">
@@ -1671,9 +1696,10 @@
             </div>
         </div>
     </footer>
-
+    <script src="/js/vetri-file-helper.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+    <!-- <script>
+
         /* ── Globals ── */
         let currentFile = null;
         let processedBlob = null;
@@ -2051,6 +2077,7 @@
                 window.location.href = '/';
                 return;
             }
+            
 
             // ── SPRING BOOT API ──
             Promise.all([
@@ -2119,7 +2146,447 @@
             document.getElementById('progressFill').style.width = '0%';
             window.location.href = '/';
         }
+    </script> -->
+    <script>
+        /* ── Globals ── */
+        let currentFile = null;
+        let processedBlob = null;
+        let processedName = 'signed.pdf';
+        let sigType = 'draw';
+        let pageRange = 'all';
+        let sigPosition = 'bottom-center';
+        let sigFont = 'Dancing Script';
+        let isDrawing = false;
+        let lastX = 0, lastY = 0;
+        let penColor = '#000000';
+        let penSize = 2;
+        let zoomLevel = 100;
+
+        /* ── Init ── */
+        window.addEventListener('DOMContentLoaded', () => {
+            const stored = sessionStorage.getItem('vetri_file');
+
+            if (stored) {
+                try {
+                    currentFile = JSON.parse(stored);
+
+                    document.getElementById('fileInfoName').textContent =
+                        currentFile.name || 'document.pdf';
+
+                    document.getElementById('fileInfoSize').textContent =
+                        formatSize(currentFile.size) + ' • PDF';
+
+                    document.getElementById('successFileName').textContent =
+                        currentFile.name || 'document.pdf';
+
+                    processedName = 'signed_' + (currentFile.name || 'document.pdf');
+
+                    document.getElementById('noFileState').style.display = 'none';
+                    document.getElementById('pdfPage').style.display = 'block';
+
+                } catch (e) { }
+            }
+
+            initDrawCanvas();
+        });
+
+        /* ── Draw Canvas ── */
+        function initDrawCanvas() {
+            const canvas = document.getElementById('sigCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.strokeStyle = penColor;
+            ctx.lineWidth = penSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = e.target.getBoundingClientRect();
+            lastX = e.clientX - rect.left;
+            lastY = e.clientY - rect.top;
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const canvas = document.getElementById('sigCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            lastX = x;
+            lastY = y;
+
+            updateSigStatus();
+            updatePDFPreview();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        /* ── Touch ── */
+        function startDrawingTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = e.target.getBoundingClientRect();
+
+            lastX = touch.clientX - rect.left;
+            lastY = touch.clientY - rect.top;
+
+            isDrawing = true;
+        }
+
+        function drawTouch(e) {
+            e.preventDefault();
+            if (!isDrawing) return;
+
+            const touch = e.touches[0];
+            const canvas = document.getElementById('sigCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            lastX = x;
+            lastY = y;
+
+            updateSigStatus();
+        }
+
+        /* ── Clear ── */
+        function clearSignature() {
+            const canvas = document.getElementById('sigCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            updateSigStatus();
+            updatePDFPreview();
+        }
+
+        /* ── Pen ── */
+        function updatePenColor(color) {
+            penColor = color;
+            document.getElementById('sigCanvas')
+                .getContext('2d').strokeStyle = color;
+        }
+
+        function updatePenSize(size) {
+            penSize = parseInt(size);
+            document.getElementById('sigCanvas')
+                .getContext('2d').lineWidth = penSize;
+        }
+
+        /* ── Typed Signature ── */
+        function updateTypedSig() {
+            const text = document.getElementById('sigText').value;
+            const canvas = document.getElementById('typedSigCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!text) return;
+
+            ctx.font = '32px ' + sigFont;
+            ctx.fillStyle = '#000';
+            ctx.fillText(text, 10, 55);
+
+            updateSigStatus();
+            updatePDFPreview();
+        }
+
+        function setSigFont(font, btn) {
+            sigFont = font;
+
+            document.querySelectorAll('.sig-font-btn')
+                .forEach(b => b.classList.remove('active'));
+
+            btn.classList.add('active');
+
+            document.getElementById('sigText').style.fontFamily =
+                font + ',cursive';
+
+            updateTypedSig();
+        }
+
+        /* ── Upload ── */
+        function loadUploadedSig(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = e => {
+                const img = document.getElementById('uploadedSigPreview');
+                img.src = e.target.result;
+                img.style.display = 'block';
+
+                updateSigStatus();
+                updatePDFPreview();
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        /* ── Switch Type ── */
+        function setSigType(type, btn) {
+            sigType = type;
+
+            document.querySelectorAll('.sig-tab')
+                .forEach(b => b.classList.remove('active'));
+
+            btn.classList.add('active');
+
+            document.getElementById('panelDraw').style.display =
+                type === 'draw' ? 'block' : 'none';
+
+            document.getElementById('panelType').style.display =
+                type === 'type' ? 'block' : 'none';
+
+            document.getElementById('panelUpload').style.display =
+                type === 'upload' ? 'block' : 'none';
+
+            // CLEAR preview completely
+            const canvas = document.getElementById('sigPreviewCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            updateSigStatus();
+            updatePDFPreview();
+        }
+
+        /* ── Range ── */
+        function setRange(range, label) {
+            pageRange = range;
+
+            document.querySelectorAll('.range-option')
+                .forEach(l => l.classList.remove('active'));
+
+            label.classList.add('active');
+
+            document.getElementById('customRangeRow').style.display =
+                range === 'custom' ? 'flex' : 'none';
+        }
+
+        /* ── Position ── */
+        function setPosition(pos, btn) {
+            sigPosition = pos;
+
+            document.querySelectorAll('.pos-btn')
+                .forEach(b => b.classList.remove('active'));
+
+            btn.classList.add('active');
+
+            updatePDFPreview();
+        }
+
+        /* ── 🔥 FIXED PREVIEW ── */
+        function updatePDFPreview() {
+            const overlay = document.getElementById('sigOverlay');
+            const canvas = document.getElementById('sigPreviewCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let sigDataURL = null;
+
+            // GET SIGNATURE
+            if (sigType === 'draw') {
+                sigDataURL = document.getElementById('sigCanvas').toDataURL();
+            }
+            else if (sigType === 'type') {
+                sigDataURL = document.getElementById('typedSigCanvas').toDataURL();
+            }
+            else if (sigType === 'upload') {
+                const img = document.getElementById('uploadedSigPreview');
+                sigDataURL = img?.src;
+            }
+
+            // HARD CLEAR
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!sigDataURL) return;
+
+            const img = new Image();
+
+            img.onload = function () {
+
+                const scale =
+                    parseInt(document.getElementById('sigSize').value) / 100;
+
+                const w = img.width * scale;
+                const h = img.height * scale;
+
+                canvas.width = w;
+                canvas.height = h;
+
+                ctx.drawImage(img, 0, 0, w, h);
+            };
+
+            img.src = sigDataURL;
+
+            // POSITION
+            const posMap = {
+                'top-left': { top: '20px', left: '20px' },
+                'top-center': { top: '20px', left: '50%', transform: 'translateX(-50%)' },
+                'top-right': { top: '20px', right: '20px' },
+                'mid-left': { top: '50%', left: '20px', transform: 'translateY(-50%)' },
+                'center': { top: '50%', left: '50%', transform: 'translate(-50%,-50%)' },
+                'mid-right': { top: '50%', right: '20px', transform: 'translateY(-50%)' },
+                'bottom-left': { bottom: '40px', left: '20px' },
+                'bottom-center': { bottom: '40px', left: '50%', transform: 'translateX(-50%)' },
+                'bottom-right': { bottom: '40px', right: '20px' }
+            };
+
+            const p = posMap[sigPosition] || posMap['bottom-center'];
+
+            overlay.style.cssText = '';
+            Object.assign(overlay.style, p);
+        }
+
+        /* ── Status ── */
+        function updateSigStatus() {
+            let hasSig = false;
+
+            if (sigType === 'draw') {
+                const canvas = document.getElementById('sigCanvas');
+                const ctx = canvas.getContext('2d');
+                const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                hasSig = data.some((v, i) => i % 4 === 3 && v > 0);
+            }
+            else if (sigType === 'type') {
+                hasSig = document.getElementById('sigText').value.length > 0;
+            }
+            else {
+                hasSig = document.getElementById('uploadedSigPreview').src !== '';
+            }
+
+            const bar = document.getElementById('sigStatusBar');
+            const title = document.getElementById('sigStatusTitle');
+            const sub = document.getElementById('sigStatusSub');
+            const badge = document.getElementById('sigStatusBadge');
+
+            if (hasSig) {
+                bar.classList.add('signed');
+                title.textContent = 'Signature Ready';
+                sub.textContent = 'Click Process to apply to PDF';
+                badge.textContent = 'Ready';
+                badge.classList.add('ready');
+            } else {
+                bar.classList.remove('signed');
+                title.textContent = 'No signature added';
+                sub.textContent = 'Draw, type or upload signature';
+                badge.textContent = 'Pending';
+                badge.classList.remove('ready');
+            }
+        }
+
+        /* ── Zoom ── */
+        function changeZoom(delta) {
+            zoomLevel = Math.max(50, Math.min(200, zoomLevel + delta));
+
+            document.getElementById('zoomVal').textContent =
+                zoomLevel + '%';
+
+            document.getElementById('pdfPage').style.transform =
+                'scale(' + zoomLevel / 100 + ')';
+        }
+
+        /* ── Get Signature ── */
+        function getSignatureDataURL() {
+            if (sigType === 'draw') {
+                return document.getElementById('sigCanvas')
+                    .toDataURL('image/png');
+            }
+            else if (sigType === 'type') {
+                return document.getElementById('typedSigCanvas')
+                    .toDataURL('image/png');
+            }
+            else {
+                return document.getElementById('uploadedSigPreview').src;
+            }
+        }
+
+        /* ── Format ── */
+        function formatSize(bytes) {
+            if (!bytes) return '—';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        /* ── Process ── */
+        function startProcessing() {
+            if (!currentFile) {
+                alert('No file');
+                return;
+            }
+
+            const sigDataURL = getSignatureDataURL();
+
+            const pdfData = sessionStorage.getItem('vetri_file_data');
+
+            fetch(pdfData).then(r => r.blob())
+                .then(pdfBlob => {
+                    return fetch(sigDataURL).then(r => r.blob())
+                        .then(sigBlob => ({ pdfBlob, sigBlob }));
+                })
+                .then(({ pdfBlob, sigBlob }) => {
+
+                    const formData = new FormData();
+                    formData.append('file', pdfBlob, currentFile.name);
+                    formData.append('signature', sigBlob, 'sig.png');
+                    formData.append('pageRange', pageRange);
+                    formData.append('position', sigPosition);
+
+                    return fetch('/api/pdf/add-signature', {
+                        method: 'POST',
+                        body: formData
+                    });
+                })
+                .then(r => r.blob())
+                .then(blob => {
+                    processedBlob = blob;
+                    alert('Done!');
+                })
+                .catch(err => {
+                    alert('Error: ' + err.message);
+                });
+        }
+
+        /* ── Download ── */
+        function downloadFile() {
+            if (!processedBlob) return;
+
+            const url = URL.createObjectURL(processedBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = processedName;
+            a.click();
+        }
+
+        /* ── Sign Another ── */
+        function signAnother() {
+            window.location.href = '/';
+        }
     </script>
+
 </body>
 
 </html>
