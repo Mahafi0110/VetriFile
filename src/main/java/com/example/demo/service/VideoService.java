@@ -13,7 +13,7 @@ public class VideoService {
     private static final String FFMPEG = "ffmpeg";
 
     // ─────────────────────────────────────────────────────────────────────────
-    // SAVE MULTIPART FILE → TEMP FILE  (streaming — large file safe)
+    // SAVE MULTIPART FILE → TEMP FILE (streaming — large file safe)
     // ─────────────────────────────────────────────────────────────────────────
     public File saveToTempFile(MultipartFile file) throws IOException {
 
@@ -22,11 +22,10 @@ public class VideoService {
         // ✅ /tmp is always writable on Render
         File temp = File.createTempFile(
                 "input_" + System.currentTimeMillis(), ext,
-                new File(System.getProperty("java.io.tmpdir"))
-        );
+                new File(System.getProperty("java.io.tmpdir")));
 
-        try (InputStream in  = file.getInputStream();
-             OutputStream out = new FileOutputStream(temp)) {
+        try (InputStream in = file.getInputStream();
+                OutputStream out = new FileOutputStream(temp)) {
 
             byte[] buffer = new byte[8 * 1024];
             int bytesRead;
@@ -42,18 +41,20 @@ public class VideoService {
     // COMPRESS VIDEO
     // ─────────────────────────────────────────────────────────────────────────
     public File compressVideo(File input,
-                              int crf,
-                              String resolution,
-                              String format) throws Exception {
+            int crf,
+            String resolution,
+            String format) throws Exception {
 
-        if (crf <= 0)                              crf        = 28;
-        if (resolution == null || resolution.isEmpty()) resolution = "720";
-        if (format     == null || format.isEmpty())     format     = "mp4";
+        if (crf <= 0)
+            crf = 28;
+        if (resolution == null || resolution.isEmpty())
+            resolution = "480";
+        if (format == null || format.isEmpty())
+            format = "mp4";
 
         File output = File.createTempFile(
                 "output_" + System.currentTimeMillis(), "." + format,
-                new File(System.getProperty("java.io.tmpdir"))
-        );
+                new File(System.getProperty("java.io.tmpdir")));
 
         String scale = resolution.equals("original")
                 ? "scale=iw:ih"
@@ -62,15 +63,19 @@ public class VideoService {
         List<String> command = Arrays.asList(
                 FFMPEG,
                 "-y",
-                "-i",      input.getAbsolutePath(),
-                "-vf",     scale,
-                "-c:v",    "libx264",
-                "-crf",    String.valueOf(crf),
+                "-i", input.getAbsolutePath(),
+                // ✅ Limit threads to reduce RAM usage
+                "-threads", "1",
+                "-vf", scale,
+                "-c:v", "libx264",
+                "-crf", String.valueOf(crf),
                 "-preset", "veryfast",
-                "-c:a",    "aac",
-                "-b:a",    "64k",
-                output.getAbsolutePath()
-        );
+                // ✅ Reduce buffer size to save RAM
+                "-bufsize", "500k",
+                "-maxrate", "500k",
+                "-c:a", "aac",
+                "-b:a", "64k",
+                output.getAbsolutePath());
 
         runFFmpeg(command);
 
@@ -88,27 +93,25 @@ public class VideoService {
     // ✅ Accepts File (not MultipartFile) — stream already saved by controller
     // ─────────────────────────────────────────────────────────────────────────
     public File extractAudio(File input,
-                             String format,
-                             String bitrate,
-                             String sampleRate,
-                             String channels) throws Exception {
+            String format,
+            String bitrate,
+            String sampleRate,
+            String channels) throws Exception {
 
         File output = File.createTempFile(
                 "audio_" + System.currentTimeMillis(), "." + format,
-                new File(System.getProperty("java.io.tmpdir"))
-        );
+                new File(System.getProperty("java.io.tmpdir")));
 
         List<String> cmd = Arrays.asList(
                 FFMPEG,
                 "-y",
-                "-i",       input.getAbsolutePath(),
+                "-i", input.getAbsolutePath(),
                 "-vn",
-                "-acodec",  "libmp3lame",
-                "-ab",      bitrate + "k",
-                "-ar",      sampleRate,
-                "-ac",      channels,
-                output.getAbsolutePath()
-        );
+                "-acodec", "libmp3lame",
+                "-ab", bitrate + "k",
+                "-ar", sampleRate,
+                "-ac", channels,
+                output.getAbsolutePath());
 
         runFFmpeg(cmd);
 
@@ -121,23 +124,21 @@ public class VideoService {
     // ✅ Accepts File (not MultipartFile) — stream already saved by controller
     // ─────────────────────────────────────────────────────────────────────────
     public File trimVideo(File input,
-                          double start,
-                          double end) throws Exception {
+            double start,
+            double end) throws Exception {
 
         File output = File.createTempFile(
                 "trim_" + System.currentTimeMillis(), ".mp4",
-                new File(System.getProperty("java.io.tmpdir"))
-        );
+                new File(System.getProperty("java.io.tmpdir")));
 
         List<String> cmd = Arrays.asList(
                 FFMPEG,
                 "-y",
-                "-i",  input.getAbsolutePath(),
+                "-i", input.getAbsolutePath(),
                 "-ss", String.valueOf(start),
                 "-to", String.valueOf(end),
-                "-c",  "copy",
-                output.getAbsolutePath()
-        );
+                "-c", "copy",
+                output.getAbsolutePath());
 
         runFFmpeg(cmd);
 
@@ -158,8 +159,7 @@ public class VideoService {
 
         Process process = pb.start();
 
-        try (BufferedReader reader =
-                     new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 System.out.println("FFMPEG: " + line);
