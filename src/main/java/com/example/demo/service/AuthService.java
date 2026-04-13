@@ -9,6 +9,7 @@ import com.example.demo.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
+     // ✅ Inject base URL from properties
+    @Value("${app.base-url}")
+    private String baseUrl;
+
 
     // ── REGISTER ──────────────────────────────
     public AuthResponse register(RegisterRequest request) {
@@ -90,17 +95,17 @@ public class AuthService {
  public void forgotPassword(String email) {
 
     String cleanEmail = email.trim().toLowerCase();
-
     User user = userRepository.findByEmail(cleanEmail).orElse(null);
 
     if (user != null) {
 
         // token valid for 15 minutes
         long expiration = 15 * 60 * 1000;
-
         String token = jwtUtil.generateToken(user.getEmail(), expiration);
 
-        String resetLink = "http://localhost:8080/reset-password?token=" + token;
+          // ✅ Dynamic URL — works on both localhost and Rende
+    
+          String resetLink = baseUrl + "/reset-password?token=" + token;
 
         emailService.sendEmail(
                 cleanEmail,
