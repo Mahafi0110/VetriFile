@@ -662,30 +662,7 @@
   <!-- ════════════════════════════════
      NAVBAR
 ════════════════════════════════ -->
-  <nav class="navbar navbar-expand-lg">
-    <div class="container">
-      <a class="navbar-brand" href="/">
-        <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
-        <span class="brand-name">Vetri Files</span>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="mainNav">
-        <ul class="navbar-nav mx-auto">
-          <li class="nav-item"><a class="nav-link" href="/all-tools">Tools</a></li>
-          <li class="nav-item"><a class="nav-link" href="/Feature">Features</a></li>
-        </ul>
-        <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
-          <a href="/login" class="nav-link btn-login">Login</a>
-          <a href="/register" class="nav-link btn-get-started">Get Started</a>
-        </div>
-      </div>
-    </div>
-  </nav>
-
-
+  <div id="vetri-navbar"></div>
   <!-- ════════════════════════════════
      PAGE HEADER
 ════════════════════════════════ -->
@@ -853,6 +830,9 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/vetri-file-helper.js"></script>
+
 
   <script>
     /* ══════════════════════════════════
@@ -908,6 +888,12 @@
        INIT — load file from sessionStorage
     ══════════════════════════════════ */
     window.addEventListener('DOMContentLoaded', () => {
+      // ✅ D_020 FIX — if opened directly (not from upload), show fresh state
+      if (!isFromUpload()) {
+        // Show "no file" state — don't load previous file
+        showNoFileState();
+        return;
+      }
       const stored = sessionStorage.getItem('vetri_file');
       if (!stored) return;
       try {
@@ -930,6 +916,15 @@
         }
       } catch (e) { /* use defaults */ }
     });
+
+    function showNoFileState() {
+      // This page's "no file" state is the previewArea content
+      document.getElementById('previewFilename').textContent = 'No file loaded';
+      document.getElementById('previewIcon').className = 'bi bi-cloud-upload';
+      const hint = document.querySelector('.preview-hint');
+      if (hint) hint.innerHTML =
+        '<a href="/" style="color:#3B82F6">← Upload a file from home page first</a>';
+    }
 
     /* ══════════════════════════════════
        PROCESSING FLOW

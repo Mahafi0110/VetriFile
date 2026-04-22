@@ -1,8 +1,54 @@
 /* ══════════════════════════════════════════════
    Vetri Files — File Helper
    Retrieves file from sessionStorage or IndexedDB
-   Use this in every tool page
 ══════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════
+   SESSION GUARD — D_020 fix
+   
+   Flow:
+   • Home upload sets vetri_from_upload = true
+   • file-tools saveToolFile() re-sets it on every tool click
+   • Tool pages call isFromUpload() — no consuming, flag stays
+   • Direct navigation from all-tools → flag never set → false
+════════════════════════════════════════════ */
+
+function isFromUpload() {
+  const hasFile    = !!sessionStorage.getItem('vetri_file');
+  const fromUpload = sessionStorage.getItem('vetri_from_upload') === 'true';
+  // return hasFile && fromUpload;
+   if (hasFile && fromUpload) {
+    // ✅ Consume the flag — tool page has read it once
+    // file-tools will re-set it when user picks another tool
+    sessionStorage.removeItem('vetri_from_upload');
+    return true;
+  }
+  return false;
+  // Flag is NOT consumed here so Back → file-tools → another tool works
+}
+
+function clearStoredFile() {
+  sessionStorage.removeItem('vetri_file');
+  sessionStorage.removeItem('vetri_file_data');
+  sessionStorage.removeItem('vetri_storage_type');
+  sessionStorage.removeItem('vetri_from_upload');
+  try {
+    const req = indexedDB.open('VetriFilesDB', 1);
+    req.onsuccess = e => {
+      const db = e.target.result;
+      if (db.objectStoreNames.contains('files')) {
+        db.transaction('files', 'readwrite')
+          .objectStore('files')
+          .delete('current_file');
+      }
+      db.close();
+    };
+  } catch (e) { /* silent */ }
+}
+
+/* ════════════════════════════════════════════
+   CORE FILE RETRIEVAL
+════════════════════════════════════════════ */
 
 /* ── Get file blob ready for FormData ── */
 function getFileBlob(callback) {
@@ -24,7 +70,6 @@ function getFileBlob(callback) {
       window.location.href = '/';
     });
   } else {
-    // Try sessionStorage first
     const dataURL = sessionStorage.getItem('vetri_file_data');
     if (dataURL) {
       fetch(dataURL)
@@ -41,7 +86,6 @@ function getFileBlob(callback) {
           window.location.href = '/';
         });
     } else {
-      // sessionStorage failed — try IndexedDB as fallback
       _readFromDB(function(file) {
         if (file) { callback(file, fileMeta); return; }
         alert('File not found. Please upload again.');
@@ -65,7 +109,6 @@ function getFileDataURL(callback) {
   } else {
     const dataURL = sessionStorage.getItem('vetri_file_data');
     if (dataURL) { callback(dataURL); return; }
-    // Fallback to IndexedDB
     _readFromDB(function(file) {
       if (!file) { callback(null); return; }
       const reader = new FileReader();
@@ -78,7 +121,7 @@ function getFileDataURL(callback) {
 /* ── Get video/audio object URL for player ── */
 function getFileObjectURL(callback) {
   const storageType = sessionStorage.getItem('vetri_storage_type');
-  const dataURL = sessionStorage.getItem('vetri_file_data');
+  const dataURL     = sessionStorage.getItem('vetri_file_data');
 
   const tryIndexedDB = cb => {
     _readFromDB(function(file) {
@@ -96,19 +139,16 @@ function getFileObjectURL(callback) {
 
   if (storageType === 'indexeddb') {
     tryIndexedDB(url => {
-      if (url) { callback(url); }
-      else { trySessionStorage(callback); }
+      if (url) { callback(url); } else { trySessionStorage(callback); }
     });
   } else if (storageType === 'session') {
     trySessionStorage(url => {
-      if (url) { callback(url); }
-      else { tryIndexedDB(callback); }
+      if (url) { callback(url); } else { tryIndexedDB(callback); }
     });
   } else {
     if (dataURL) {
       trySessionStorage(url => {
-        if (url) { callback(url); }
-        else { tryIndexedDB(callback); }
+        if (url) { callback(url); } else { tryIndexedDB(callback); }
       });
     } else {
       tryIndexedDB(callback);
@@ -120,43 +160,28 @@ function getFileObjectURL(callback) {
 function _readFromDB(callback) {
   try {
     const req = indexedDB.open('VetriFilesDB', 1);
-
     req.onerror = () => callback(null);
-
     req.onupgradeneeded = e => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains('files')) {
         db.createObjectStore('files', { keyPath: 'id' });
       }
     };
-
     req.onsuccess = e => {
       const db = e.target.result;
-
       if (!db.objectStoreNames.contains('files')) {
-        db.close();
-        callback(null);
-        return;
+        db.close(); callback(null); return;
       }
-
-      const tx      = db.transaction('files', 'readonly');
-      const store   = tx.objectStore('files');
-      const getReq  = store.get('current_file');
-
+      const getReq = db.transaction('files', 'readonly')
+                       .objectStore('files').get('current_file');
       getReq.onsuccess = ev => {
         db.close();
         const record = ev.target.result;
         callback(record && record.file ? record.file : null);
       };
-
-      getReq.onerror = () => {
-        db.close();
-        callback(null);
-      };
+      getReq.onerror = () => { db.close(); callback(null); };
     };
-  } catch(e) {
-    callback(null);
-  }
+  } catch(e) { callback(null); }
 }
 
 /* ── Format time helper ── */
@@ -176,10 +201,8 @@ function formatTime(secs) {
 /* ── Format file size ── */
 function formatSize(bytes) {
   if (!bytes) return '—';
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024)
-    return (bytes / 1024).toFixed(1) + ' KB';
-  if (bytes < 1024 * 1024 * 1024)
-    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  if (bytes < 1024)                return bytes + ' B';
+  if (bytes < 1024 * 1024)        return (bytes / 1024).toFixed(1) + ' KB';
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
   return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
 }

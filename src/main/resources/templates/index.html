@@ -10,6 +10,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet" />
+      <script src="/js/vetri-file-helper.js"></script>
   <style>
     :root {
       --blue-dark: #1E3A8A;
@@ -687,6 +688,28 @@
         <p class="upload-title">Drag &amp; Drop Your File</p>
         <p class="upload-sub">or click to browse from your device</p>
         <button class="btn-choose" onclick="document.getElementById('fileInput').click()">Choose File</button>
+
+
+  <!-- ✅ ADD THIS — hidden by default, shown on oversized upload -->
+  <div id="uploadError" style="
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 10px 16px;
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: 10px;
+    color: #B91C1C;
+    font-size: .84rem;
+    font-weight: 500;
+    max-width: 380px;
+    text-align: left;
+    line-height: 1.4;
+  ">
+    <i class="bi bi-exclamation-circle-fill" style="font-size:1.1rem;flex-shrink:0;"></i>
+    <span></span>
+  </div>
       </div>
 
       <div class="pills">
@@ -826,6 +849,8 @@
   const raw = sessionStorage.getItem('vetri_user');
   const user = raw ? JSON.parse(raw) : null;
   const navRight = document.getElementById('navRight');
+  const MAX_FILE_MB = 10;
+const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
 
   if (user) {
     const initials = user.name
@@ -910,9 +935,24 @@ card.addEventListener('click', e => {
 input.addEventListener('change', () => {
   if (input.files.length) handleFile(input.files[0]);
 });
-
 /* ── HANDLE FILE (MAIN LOGIC) ───────────── */
+const MAX_FILE_MB = 10;
+const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+
 function handleFile(file) {
+
+  // ✅ SIZE GUARD — block anything over 10MB
+  if (file.size > MAX_FILE_BYTES) {
+    showUploadError(
+      `"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum allowed size is ${MAX_FILE_MB} MB.`
+    );
+    // Reset the file input so the same file can trigger change again if needed
+    document.getElementById('fileInput').value = '';
+    return;
+  }
+
+  // Hide any previous error
+  hideUploadError();
 
   // Clear old data
   sessionStorage.removeItem('vetri_file');
@@ -929,13 +969,52 @@ function handleFile(file) {
   // 🔥 RULES:
   // Video OR >1.5MB → IndexedDB
   // Others → sessionStorage
-
   if (file.type.startsWith('video/') || file.size > 1.5 * 1024 * 1024) {
     storeInIndexedDB(file);
   } else {
     storeAsBase64(file);
   }
 }
+
+/* ── UPLOAD ERROR HELPERS ───────────────── */
+function showUploadError(message) {
+  const el = document.getElementById('uploadError');
+  if (el) {
+    el.textContent = message;
+    el.style.display = 'flex';
+  }
+}
+
+function hideUploadError() {
+  const el = document.getElementById('uploadError');
+  if (el) el.style.display = 'none';
+}
+
+/* ── HANDLE FILE (MAIN LOGIC) ───────────── */
+// function handleFile(file) {
+
+//   // Clear old data
+//   sessionStorage.removeItem('vetri_file');
+//   sessionStorage.removeItem('vetri_file_data');
+//   sessionStorage.removeItem('vetri_storage_type');
+
+//   // Store metadata
+//   sessionStorage.setItem('vetri_file', JSON.stringify({
+//     name: file.name,
+//     size: file.size,
+//     type: file.type
+//   }));
+
+//   // 🔥 RULES:
+//   // Video OR >1.5MB → IndexedDB
+//   // Others → sessionStorage
+
+//   if (file.type.startsWith('video/') || file.size > 1.5 * 1024 * 1024) {
+//     storeInIndexedDB(file);
+//   } else {
+//     storeAsBase64(file);
+//   }
+// }
 
 /* ── STORE IN INDEXEDDB ─────────────────── */
 function storeInIndexedDB(file) {
@@ -961,12 +1040,14 @@ function storeInIndexedDB(file) {
       id: 'current_file',
       file: file
     });
-
-    tx.oncomplete = () => {
-      db.close();
-      sessionStorage.setItem('vetri_storage_type', 'indexeddb');
-      window.location.href = '/file-tools';
-    };
+    
+    // In storeInIndexedDB() → tx.oncomplete:
+tx.oncomplete = () => {
+  db.close();
+  sessionStorage.setItem('vetri_storage_type', 'indexeddb');
+  sessionStorage.setItem('vetri_from_upload', 'true'); // ← ADD THIS
+  window.location.replace('/file-tools');
+};
 
     tx.onerror = () => {
       db.close();
@@ -983,13 +1064,14 @@ function storeAsBase64(file) {
     try {
       sessionStorage.setItem('vetri_file_data', e.target.result);
       sessionStorage.setItem('vetri_storage_type', 'session');
+      sessionStorage.setItem('vetri_from_upload', 'true'); // ← ADD THIS
     } catch (err) {
       console.warn("sessionStorage full, switching to IndexedDB");
       storeInIndexedDB(file);
       return;
     }
 
-    window.location.href = '/file-tools';
+    window.location.replace('/file-tools');
   };
 
   reader.onerror = () => alert('Could not read file.');

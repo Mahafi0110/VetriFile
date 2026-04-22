@@ -1088,29 +1088,7 @@
     <!-- ════════════════════════════════
      NAVBAR
 ════════════════════════════════ -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
-                <span class="brand-name">Vetri Files</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="/all-tools">Tools</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
-                </ul>
-                <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
-                    <a href="/login" class="nav-link btn-login">Login</a>
-                    <a href="/register" class="nav-link btn-get-started">Get Started</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
+      <div id="vetri-navbar"></div>
     <!-- ════════════════════════════════
      PAGE HEADER
 ════════════════════════════════ -->
@@ -1164,7 +1142,7 @@
                                 <i class="bi bi-check-circle-fill bg-check"></i>
                             </div>
 
-                            <div class="bg-option" onclick="setBgOption('white', this)">
+                            <!-- <div class="bg-option" onclick="setBgOption('white', this)">
                                 <div class="bg-swatch white-swatch"></div>
                                 <span>White</span>
                                 <i class="bi bi-check-circle-fill bg-check"></i>
@@ -1181,7 +1159,7 @@
                                 </div>
                                 <span>Custom Color</span>
                                 <i class="bi bi-check-circle-fill bg-check"></i>
-                            </div>
+                            </div> -->
 
                         </div>
 
@@ -1238,7 +1216,7 @@
                         <div class="preview-header">
                             <p class="preview-title">Preview</p>
                             <div class="preview-tabs">
-                                <button class="prev-tab active" onclick="setPreviewTab('original', this)">
+                                <!-- <button class="prev-tab active" onclick="setPreviewTab('original', this)">
                                     Original
                                 </button>
                                 <button class="prev-tab" onclick="setPreviewTab('result', this)">
@@ -1246,7 +1224,7 @@
                                 </button>
                                 <button class="prev-tab" onclick="setPreviewTab('compare', this)">
                                     Compare
-                                </button>
+                                </button> -->
                             </div>
                         </div>
 
@@ -1430,177 +1408,173 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let currentFile = null;
-        let processedBlob = null;
-        let processedName = 'no-bg.png';
-        let bgOption = 'transparent';
-        let refinement = 'balanced';
-        let customBgColor = '#3B82F6';
+    <script src="/js/auth.js"></script>        
+   <script src="/js/vetri-file-helper.js"></script>
+<!-- <script>
+    let currentFile   = null;
+    let processedBlob = null;
+    let processedName = 'no-bg.png';
+    let bgOption      = 'transparent';
+    let refinement    = 'balanced';
+    let customBgColor = '#3B82F6';
 
-        /* ── Init ── */
-        window.addEventListener('DOMContentLoaded', () => {
-            const stored = sessionStorage.getItem('vetri_file');
-            const dataURL = sessionStorage.getItem('vetri_file_data');
-            if (!stored || !dataURL) return;
-            try {
-                currentFile = JSON.parse(stored);
-                loadImagePreview(currentFile, dataURL);
-            } catch (e) { }
-        });
+    /* ── Init ── */
+    window.addEventListener('DOMContentLoaded', () => {
+         // ✅ D_020 FIX — if opened directly (not from upload), show fresh state
+  if (!isFromUpload()) {
+    // Show "no file" state — don't load previous file
+    showNoFileState();
+    return;
+  }
+        const stored = sessionStorage.getItem('vetri_file');
+        if (!stored) return;
 
-        /* ── Load image preview ── */
-        function loadImagePreview(f, dataURL) {
-            document.getElementById('fileInfoName').textContent =
-                f.name || 'image';
-            document.getElementById('fileInfoSize').textContent =
-                formatSize(f.size);
-            document.getElementById('successFileName').textContent =
-                f.name.replace(/\.[^.]+$/, '') + '.png' || 'image.png';
-            processedName =
-                f.name.replace(/\.[^.]+$/, '') + '_no_bg.png';
+        try { currentFile = JSON.parse(stored); } catch (e) { return; }
 
-            // Set original images
-            document.getElementById('originalImg').src = dataURL;
-            document.getElementById('compareOrigImg').src = dataURL;
-
-            // Show original tab
-            document.getElementById('noImgState').style.display =
-                'none';
-            document.getElementById('tabOriginal').style.display =
-                'flex';
-        }
-
-        /* ── Preview tabs ── */
-        function setPreviewTab(tab, btn) {
-            document.querySelectorAll('.prev-tab')
-                .forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('tabOriginal').style.display =
-                tab === 'original' ? 'flex' : 'none';
-            document.getElementById('tabResult').style.display =
-                tab === 'result' ? 'flex' : 'none';
-            document.getElementById('tabCompare').style.display =
-                tab === 'compare' ? 'flex' : 'none';
-        }
-
-        /* ── BG option ── */
-        function setBgOption(option, el) {
-            bgOption = option;
-            document.querySelectorAll('.bg-option')
-                .forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('colorPickerRow').style.display =
-                option === 'color' ? 'block' : 'none';
-            updateResultBg();
-        }
-
-        /* ── Color swatch update ── */
-        function updateColorSwatch(color) {
-            customBgColor = color;
-            document.getElementById('colorSwatchPreview').style.background
-                = color;
-            document.getElementById('colorHexVal').textContent = color;
-            updateResultBg();
-        }
-
-        /* ── Update result bg ── */
-        function updateResultBg() {
-            const resultBg = document.getElementById('resultBg');
-            resultBg.className = 'result-bg';
-            if (bgOption === 'white')
-                resultBg.classList.add('bg-white');
-            else if (bgOption === 'black')
-                resultBg.classList.add('bg-black');
-            else if (bgOption === 'color')
-                resultBg.style.background = customBgColor;
-            else
-                resultBg.style.background = '';
-        }
-
-        /* ── Refinement ── */
-        function setRefinement(level, btn) {
-            refinement = level;
-            document.querySelectorAll('.ref-btn')
-                .forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        /* ── Format size ── */
-        function formatSize(bytes) {
-            if (!bytes) return '—';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024)
-                return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-        }
-
-        /* ── Start Processing ── */
-        function startProcessing() {
-            if (!currentFile) {
-                alert('No image found. Please upload from home page.');
-                window.location.href = '/';
-                return;
-            }
-
-            const format =
-                document.getElementById('outputFormat').value;
-
-            // Update summary
-            const bgLabels = {
-                transparent: 'Transparent background',
-                white: 'White background',
-                black: 'Black background',
-                color: 'Custom color: ' + customBgColor
-            };
-            document.getElementById('summaryFormat').textContent =
-                format.toUpperCase() + ' format';
-            document.getElementById('summaryBg').textContent =
-                bgLabels[bgOption];
-
-            processedName = currentFile.name
-                .replace(/\.[^.]+$/, '') + '_no_bg.' + format;
-
-            const processingModal =
-                document.getElementById('processingModal');
-            const progressFill =
-                document.getElementById('progressFill');
-            processingModal.classList.add('show');
-
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress >= 95) {
-                    progress = 95; clearInterval(interval);
-                }
-                progressFill.style.width = progress + '%';
-            }, 400);
-
-            const dataURL = sessionStorage.getItem('vetri_file_data');
+        // ✅ FIX 1 — use getFileDataURL which reads from IndexedDB OR sessionStorage
+        getFileDataURL(function(dataURL) {
             if (!dataURL) {
-                clearInterval(interval);
-                processingModal.classList.remove('show');
-                alert('File data not found. Please upload again.');
-                window.location.href = '/';
+                document.querySelector('#noImgState span').textContent =
+                    'File data missing. Please re-upload from home page.';
                 return;
             }
+            loadImagePreview(currentFile, dataURL);
+        });
+    });
+ function showNoFileState() {
+  document.getElementById('previewFilename').textContent = 'No file loaded';
+  document.getElementById('previewIcon').className = 'bi bi-cloud-upload';
+  document.querySelector('.preview-hint').innerHTML =
+    '<a href="/" style="color:#3B82F6">← Upload a file from home page first</a>';
+}
 
-            // ── SPRING BOOT API ──
-            fetch(dataURL)
-                .then(r => r.blob())
-                .then(blob => {
-                    const formData = new FormData();
-                    formData.append('file', blob, currentFile.name);
-                    formData.append('bgOption', bgOption);
-                    formData.append('bgColor', customBgColor);
-                    formData.append('refinement', refinement);
-                    formData.append('format', format);
-                    return fetch('/api/image/remove-background', {
-                        method: 'POST', body: formData
-                    });
-                })
+    /* ── Load image preview ── */
+    function loadImagePreview(f, dataURL) {
+        document.getElementById('fileInfoName').textContent = f.name || 'image';
+        document.getElementById('fileInfoSize').textContent = formatSize(f.size);
+        document.getElementById('successFileName').textContent =
+            (f.name || 'image').replace(/\.[^.]+$/, '') + '.png';
+        processedName = (f.name || 'image').replace(/\.[^.]+$/, '') + '_no_bg.png';
+
+        document.getElementById('originalImg').src     = dataURL;
+        document.getElementById('compareOrigImg').src  = dataURL;
+
+        document.getElementById('noImgState').style.display  = 'none';
+        document.getElementById('tabOriginal').style.display = 'flex';
+    }
+
+    /* ── Preview tabs ── */
+    function setPreviewTab(tab, btn) {
+        document.querySelectorAll('.prev-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tabOriginal').style.display = tab === 'original' ? 'flex' : 'none';
+        document.getElementById('tabResult').style.display   = tab === 'result'   ? 'flex' : 'none';
+        document.getElementById('tabCompare').style.display  = tab === 'compare'  ? 'flex' : 'none';
+    }
+
+    /* ── BG option ── */
+    function setBgOption(option, el) {
+        bgOption = option;
+        document.querySelectorAll('.bg-option').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('colorPickerRow').style.display = option === 'color' ? 'block' : 'none';
+        updateResultBg();
+    }
+
+    /* ── Color swatch ── */
+    function updateColorSwatch(color) {
+        customBgColor = color;
+        document.getElementById('colorSwatchPreview').style.background = color;
+        document.getElementById('colorHexVal').textContent = color;
+        updateResultBg();
+    }
+
+    /* ── Update result bg preview ── */
+    function updateResultBg() {
+        const resultBg = document.getElementById('resultBg');
+        resultBg.className = 'result-bg';
+        resultBg.style.background = '';
+        if (bgOption === 'white')       resultBg.classList.add('bg-white');
+        else if (bgOption === 'black')  resultBg.classList.add('bg-black');
+        else if (bgOption === 'color')  resultBg.style.background = customBgColor;
+    }
+
+    /* ── Refinement ── */
+    function setRefinement(level, btn) {
+        refinement = level;
+        document.querySelectorAll('.ref-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    /* ── Format size ── */
+    function formatSize(bytes) {
+        if (!bytes) return '—';
+        if (bytes < 1024)        return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    /* ── Draw result to both canvases ── */
+    function drawResultToCanvases(blob) {
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+            // ✅ FIX 2 — draw to BOTH resultCanvas AND compareResultCanvas
+            ['resultCanvas', 'compareResultCanvas'].forEach(id => {
+                const canvas = document.getElementById(id);
+                canvas.width  = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                canvas.getContext('2d').drawImage(img, 0, 0);
+            });
+            URL.revokeObjectURL(url);
+        };
+        img.src = url;
+    }
+
+    /* ── Start Processing ── */
+    function startProcessing() {
+        if (!currentFile) {
+            alert('No image found. Please upload from home page.');
+            window.location.href = '/';
+            return;
+        }
+
+        const format = document.getElementById('outputFormat').value;
+
+        const bgLabels = {
+            transparent: 'Transparent background',
+            white:       'White background',
+            black:       'Black background',
+            color:       'Custom color: ' + customBgColor
+        };
+        document.getElementById('summaryFormat').textContent = format.toUpperCase() + ' format';
+        document.getElementById('summaryBg').textContent     = bgLabels[bgOption];
+        processedName = (currentFile.name || 'image').replace(/\.[^.]+$/, '') + '_no_bg.' + format;
+
+        const processingModal = document.getElementById('processingModal');
+        const progressFill    = document.getElementById('progressFill');
+        progressFill.style.width = '0%';
+        processingModal.classList.add('show');
+
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress >= 95) { progress = 95; clearInterval(interval); }
+            progressFill.style.width = progress + '%';
+        }, 400);
+
+        // ✅ FIX 1 — use getFileBlob() which reads from IndexedDB OR sessionStorage
+        getFileBlob(function(file, meta) {
+            const formData = new FormData();
+            formData.append('file',       file, meta.name);
+            formData.append('bgOption',   bgOption);
+            formData.append('bgColor',    customBgColor);
+            formData.append('refinement', refinement);
+            formData.append('format',     format);
+
+            fetch('/api/image/remove-background', { method: 'POST', body: formData })
                 .then(r => {
-                    if (!r.ok) throw new Error('Processing failed');
+                    if (!r.ok) return r.text().then(t => { throw new Error(t || 'Processing failed ' + r.status); });
                     return r.blob();
                 })
                 .then(blob => {
@@ -1608,66 +1582,279 @@
                     progressFill.style.width = '100%';
                     processedBlob = blob;
 
-                    // Show result in preview
-                    const url = URL.createObjectURL(blob);
-                    const canvas =
-                        document.getElementById('resultCanvas');
-                    const img = new Image();
-                    img.onload = () => {
-                        canvas.width = img.naturalWidth;
-                        canvas.height = img.naturalHeight;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        URL.revokeObjectURL(url);
-                    };
-                    img.src = url;
+                    // Draw result to preview canvases
+                    drawResultToCanvases(blob);
+                    updateResultBg();
 
-                    // Update status
-                    const bar = document.getElementById('statusBar');
+                    // Update status bar
+                    const bar   = document.getElementById('statusBar');
                     const title = document.getElementById('statusTitle');
-                    const sub = document.getElementById('statusSub');
+                    const sub   = document.getElementById('statusSub');
                     const badge = document.getElementById('statusBadge');
                     bar.classList.add('done');
                     title.textContent = 'Background Removed!';
-                    sub.textContent = 'Ready to download';
+                    sub.textContent   = 'Ready to download';
                     badge.textContent = 'Done';
                     badge.classList.add('done');
 
                     setTimeout(() => {
                         processingModal.classList.remove('show');
-                        document.getElementById('successModal')
-                            .classList.add('show');
+                        document.getElementById('successModal').classList.add('show');
                     }, 400);
                 })
                 .catch(err => {
                     clearInterval(interval);
                     processingModal.classList.remove('show');
+                    console.error(err);
                     alert('Failed: ' + err.message);
                 });
+        });
+    }
+
+    /* ── Download ── */
+    // ✅ FIX 3 — composite selected background color before downloading
+    function downloadFile() {
+        if (!processedBlob) return;
+
+        if (bgOption === 'transparent') {
+            // No background needed — download raw result directly
+            const url = URL.createObjectURL(processedBlob);
+            const a   = document.createElement('a');
+            a.href     = url;
+            a.download = processedName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 3000);
+            return;
         }
 
-        /* ── Download ── */
-        function downloadFile() {
-            if (processedBlob) {
-                const url = URL.createObjectURL(processedBlob);
-                const a = document.createElement('a');
-                a.href = url;
+        // Apply background color on a canvas then download
+        const blobUrl = URL.createObjectURL(processedBlob);
+        const img     = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width  = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+
+            // Fill background first
+            if (bgOption === 'white')      ctx.fillStyle = '#ffffff';
+            else if (bgOption === 'black') ctx.fillStyle = '#111827';
+            else                           ctx.fillStyle = customBgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the removed-bg image on top
+            ctx.drawImage(img, 0, 0);
+            URL.revokeObjectURL(blobUrl);
+
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a   = document.createElement('a');
+                a.href     = url;
                 a.download = processedName;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-        }
+                setTimeout(() => URL.revokeObjectURL(url), 3000);
+            }, 'image/png');
+        };
+        img.src = blobUrl;
+    }
 
-        /* ── Process Another ── */
-        function processAnother() {
-            document.getElementById('successModal')
-                .classList.remove('show');
-            document.getElementById('progressFill').style.width = '0%';
-            window.location.href = '/';
-        }
-    </script>
+    /* ── Process Another ── */
+    function processAnother() {
+        document.getElementById('successModal').classList.remove('show');
+        document.getElementById('progressFill').style.width = '0%';
+        window.location.href = '/';
+    }
+</script> -->
+<!-- ════════════════════════════════════════════════════
+     SIMPLIFIED Remove Background Script
+     - Removes background via API
+     - Downloads result directly
+     - No compare tab complexity
+     - No background color compositing
+════════════════════════════════════════════════════ -->
+
+<!-- Replace your entire <script> block with this -->
+<script>
+  let currentFile   = null;
+  let processedBlob = null;
+  let processedName = 'no-bg.png';
+
+  /* ── Init ── */
+  window.addEventListener('DOMContentLoaded', () => {
+    if (!isFromUpload()) {
+      showNoFileState();
+      return;
+    }
+
+    const stored = sessionStorage.getItem('vetri_file');
+    if (!stored) { showNoFileState(); return; }
+
+    try { currentFile = JSON.parse(stored); } catch (e) { showNoFileState(); return; }
+
+    // Load preview using getFileDataURL (works for both session and IndexedDB)
+    getFileDataURL(function(dataURL) {
+      if (!dataURL) { showNoFileState(); return; }
+      loadPreview(currentFile, dataURL);
+    });
+  });
+
+  /* ── Load preview ── */
+  function loadPreview(f, dataURL) {
+    document.getElementById('fileInfoName').textContent = f.name || 'image';
+    document.getElementById('fileInfoSize').textContent = formatSize(f.size);
+    processedName = (f.name || 'image').replace(/\.[^.]+$/, '') + '_no_bg.png';
+
+    // Show original image in preview
+    document.getElementById('originalImg').src    = dataURL;
+    document.getElementById('compareOrigImg').src = dataURL;
+
+    document.getElementById('noImgState').style.display  = 'none';
+    document.getElementById('tabOriginal').style.display = 'flex';
+  }
+
+  /* ── No file state ── */
+  function showNoFileState() {
+    document.getElementById('noImgState').style.display = 'flex';
+    document.getElementById('tabOriginal').style.display = 'none';
+    document.getElementById('tabResult').style.display   = 'none';
+    document.getElementById('tabCompare').style.display  = 'none';
+    document.getElementById('statusTitle').textContent = 'No file loaded';
+    document.getElementById('statusSub').textContent   = 'Upload an image from the home page';
+  }
+
+  /* ── Preview tabs ── */
+  function setPreviewTab(tab, btn) {
+    document.querySelectorAll('.prev-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tabOriginal').style.display = tab === 'original' ? 'flex' : 'none';
+    document.getElementById('tabResult').style.display   = tab === 'result'   ? 'flex' : 'none';
+    document.getElementById('tabCompare').style.display  = tab === 'compare'  ? 'flex' : 'none';
+  }
+
+  /* ── BG option (UI only — no download compositing) ── */
+  function setBgOption(option, el) {
+    document.querySelectorAll('.bg-option').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('colorPickerRow').style.display = option === 'color' ? 'block' : 'none';
+  }
+
+  function updateColorSwatch(color) {
+    document.getElementById('colorSwatchPreview').style.background = color;
+    document.getElementById('colorHexVal').textContent = color;
+  }
+
+  function setRefinement(level, btn) {
+    document.querySelectorAll('.ref-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  /* ── Start Processing ── */
+  function startProcessing() {
+    if (!currentFile) {
+      alert('No image found. Please upload from home page.');
+      window.location.href = '/';
+      return;
+    }
+
+    const format       = document.getElementById('outputFormat').value;
+    const bgOption     = document.querySelector('.bg-option.active')?.dataset?.option || 'transparent';
+    const bgColor      = document.getElementById('bgColor')?.value || '#ffffff';
+    const refinement   = document.querySelector('.ref-btn.active')?.dataset?.level || 'balanced';
+
+    processedName = (currentFile.name || 'image').replace(/\.[^.]+$/, '') + '_no_bg.' + format;
+    document.getElementById('successFileName').textContent = currentFile.name || 'image';
+
+    const processingModal = document.getElementById('processingModal');
+    const progressFill    = document.getElementById('progressFill');
+    progressFill.style.width = '0%';
+    processingModal.classList.add('show');
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress >= 95) { progress = 95; clearInterval(interval); }
+      progressFill.style.width = progress + '%';
+    }, 400);
+
+    // ✅ Use getFileBlob() — works for both session and IndexedDB
+    getFileBlob(function(file, meta) {
+      const formData = new FormData();
+      formData.append('file',       file, meta.name);
+      formData.append('bgOption',   bgOption);
+      formData.append('bgColor',    bgColor);
+      formData.append('refinement', refinement);
+      formData.append('format',     format);
+
+      fetch('/api/image/remove-background', { method: 'POST', body: formData })
+        .then(r => {
+          if (!r.ok) return r.text().then(t => { throw new Error(t || 'Failed: ' + r.status); });
+          return r.blob();
+        })
+        .then(blob => {
+          clearInterval(interval);
+          progressFill.style.width = '100%';
+          processedBlob = blob;
+
+          // ✅ Draw result to BOTH preview canvases
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.onload = () => {
+            ['resultCanvas', 'compareResultCanvas'].forEach(id => {
+              const c = document.getElementById(id);
+              if (!c) return;
+              c.width  = img.naturalWidth;
+              c.height = img.naturalHeight;
+              c.getContext('2d').drawImage(img, 0, 0);
+            });
+            URL.revokeObjectURL(url);
+          };
+          img.src = url;
+
+          // Update status bar
+          document.getElementById('statusBar').classList.add('done');
+          document.getElementById('statusTitle').textContent = 'Background Removed!';
+          document.getElementById('statusSub').textContent   = 'Ready to download';
+          document.getElementById('statusBadge').textContent = 'Done';
+          document.getElementById('statusBadge').classList.add('done');
+
+          setTimeout(() => {
+            processingModal.classList.remove('show');
+            document.getElementById('successModal').classList.add('show');
+          }, 400);
+        })
+        .catch(err => {
+          clearInterval(interval);
+          processingModal.classList.remove('show');
+          console.error(err);
+          alert('Failed: ' + err.message);
+        });
+    });
+  }
+
+  /* ── Download — simple direct download of API result ── */
+  function downloadFile() {
+    if (!processedBlob) return;
+    const url = URL.createObjectURL(processedBlob);
+    const a   = document.createElement('a');
+    a.href     = url;
+    a.download = processedName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  }
+
+  /* ── Process Another ── */
+  function processAnother() {
+    document.getElementById('successModal').classList.remove('show');
+    document.getElementById('progressFill').style.width = '0%';
+    window.location.href = '/';
+  }
+</script>
 </body>
 
 </html>

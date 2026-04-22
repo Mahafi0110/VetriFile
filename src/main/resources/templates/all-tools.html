@@ -15,6 +15,7 @@
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet" />
 
+
   <style>
     /* ─── CSS Variables ─────────────────────────────────── */
     :root {
@@ -481,6 +482,204 @@
         justify-content: center;
       }
     }
+
+    nav {
+      background: #fff;
+      border-bottom: 1px solid var(--border, #E5E7EB);
+      padding: 13px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 1px 8px rgba(0, 0, 0, .05);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-icon i {
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .brand-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1F2937;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-links a {
+      font-size: .9rem;
+      font-weight: 500;
+      color: #1F2937;
+      text-decoration: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      transition: background .2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      background: #F3F4F6;
+      color: #3B82F6;
+    }
+
+    .profile-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #F3F4F6;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 50px;
+      padding: 5px 14px 5px 5px;
+      cursor: pointer;
+      transition: border-color .2s;
+      font-family: 'Inter', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #1F2937;
+    }
+
+    .profile-btn:hover {
+      border-color: #3B82F6;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .profile-name {
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-menu-custom {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      background: #fff;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(30, 58, 138, .12);
+      min-width: 220px;
+      padding: 6px;
+      display: none;
+      z-index: 999;
+    }
+
+    .dropdown-menu-custom.open {
+      display: block;
+    }
+
+    .dropdown-header {
+      padding: 12px;
+      border-bottom: 1px solid #E5E7EB;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar-lg {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+      color: #fff;
+      font-size: .9rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+      flex-shrink: 0;
+    }
+
+    .dh-name {
+      font-weight: 700;
+      font-size: .88rem;
+      color: #1F2937;
+    }
+
+    .dh-email {
+      font-size: .75rem;
+      color: #4A5565;
+      margin-top: 2px;
+      word-break: break-all;
+    }
+
+    .dropdown-item-custom {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: .85rem;
+      font-weight: 500;
+      color: #1F2937;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      transition: background .15s;
+    }
+
+    .dropdown-item-custom:hover {
+      background: #F3F4F6;
+    }
+
+    .dropdown-item-custom.logout {
+      color: #DC2626;
+    }
+
+    .dropdown-item-custom.logout:hover {
+      background: #FEF2F2;
+    }
   </style>
 </head>
 
@@ -489,7 +688,7 @@
   <!-- ═══════════════════════════════════════════════════════
      NAVBAR
 ════════════════════════════════════════════════════════ -->
-  <nav class="navbar navbar-expand-lg">
+  <!-- <nav class="navbar navbar-expand-lg">
     <div class="container">
       <a class="navbar-brand" href="/">
         <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
@@ -510,17 +709,28 @@
         </div>
       </div>
     </div>
+  </nav>  -->
+  <nav>
+    <div class="nav-inner">
+      <a class="brand" href="/">
+        <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+        <span class="brand-name">Vetri Files</span>
+      </a>
+      <div class="nav-links">
+        <a href="/all-tools" class="active">Tools</a>
+        <a href="/Feature">Features</a>
+      </div>
+      <div id="navRight"></div>
+    </div>
   </nav>
-
-
   <!-- ═══════════════════════════════════════════════════════
      PAGE HEADER
 ════════════════════════════════════════════════════════ -->
   <div class="page-header">
     <div class="container">
-      <a href="/" class="back-link">
+      <button class="back-link" onclick="goBack()">
         <i class="bi bi-arrow-left"></i> Back to Home
-      </a>
+      </button>
       <h1 class="page-title">All Tools</h1>
       <p class="page-subtitle">Explore our complete collection of file tools</p>
     </div>
@@ -711,7 +921,7 @@
 
         <div class="row g-3">
           <div class="col-12 col-md-6 col-lg-4">
-            <a href="/tool-convert-audio" class="tool-card">
+            <a href="/tool-compress-audio" class="tool-card">
               <div class="tool-icon ti-purple-1"><i class="bi bi-arrow-left-right"></i></div>
               <div class="tool-info">
                 <p class="tool-name">Compress Audio</p>
@@ -761,7 +971,7 @@
 
         <div class="row g-3">
           <div class="col-12 col-md-6 col-lg-4">
-            <a href="/tool-convert-video" class="tool-card">
+            <a href="/tool-compress-video" class="tool-card">
               <div class="tool-icon ti-pink-1"><i class="bi bi-arrow-left-right"></i></div>
               <div class="tool-info">
                 <p class="tool-name">Compress Video</p>
@@ -871,7 +1081,74 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/vetri-file-helper.js"></script>
+  <script>
+    /* ── USER NAVBAR — same as index.html ── */
+    (function () {
+      const raw = sessionStorage.getItem('vetri_user');
+      const user = raw ? JSON.parse(raw) : null;
+      const navRight = document.getElementById('navRight');
 
+      if (user) {
+        const initials = user.name
+          ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+          : (user.email ? user.email[0].toUpperCase() : 'U');
+        const firstName = user.name ? user.name.split(' ')[0] : user.email;
+
+        navRight.innerHTML = `
+      <div class="dropdown">
+        <button class="profile-btn" onclick="toggleDropdown()">
+          <div class="avatar">${initials}</div>
+          <span class="profile-name">${firstName}</span>
+          <i class="bi bi-chevron-down" style="font-size:.7rem;color:#4A5565"></i>
+        </button>
+        <div class="dropdown-menu-custom" id="profileMenu">
+          <div class="dropdown-header">
+            <div class="avatar-lg">${initials}</div>
+            <div>
+              <div class="dh-name">${user.name || ''}</div>
+              <div class="dh-email">${user.email || ''}</div>
+            </div>
+          </div>
+          <button class="dropdown-item-custom logout" onclick="logout()">
+            <i class="bi bi-box-arrow-right"></i> Sign Out
+          </button>
+        </div>
+      </div>`;
+      } else {
+        navRight.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <a href="/login" style="font-size:.88rem;font-weight:600;color:#3B82F6;text-decoration:none;padding:7px 14px;">Login</a>
+        <a href="/register" style="background:linear-gradient(135deg,#1E3A8A,#3B82F6);color:#fff;padding:9px 22px;border-radius:50px;font-weight:600;font-size:.88rem;text-decoration:none;">Get Started</a>
+      </div>`;
+      }
+    })();
+
+    function toggleDropdown() {
+      document.getElementById('profileMenu').classList.toggle('open');
+    }
+    document.addEventListener('click', function (e) {
+      const menu = document.getElementById('profileMenu');
+      if (menu && !e.target.closest('.dropdown')) menu.classList.remove('open');
+    });
+    function logout() {
+      fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
+        sessionStorage.removeItem('vetri_user');
+        window.location.href = '/login';
+      });
+    }
+    function goBack() {
+      const ref = document.referrer;
+      if (ref.includes('/all-tools')) {
+        window.location.replace('/all-tools');
+      } else if (ref.includes('/file-tools')) {
+        window.location.replace('/file-tools');
+      } else {
+        window.location.replace('/');
+      }
+    }
+  </script>
+  
 </body>
 
 </html>
