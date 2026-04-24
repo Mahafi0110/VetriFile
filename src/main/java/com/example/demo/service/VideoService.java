@@ -46,7 +46,7 @@ public class VideoService {
             String format) throws Exception {
 
         if (crf <= 0)
-            crf = 28;
+            crf = 30;
         if (resolution == null || resolution.isEmpty())
             resolution = "480";
         if (format == null || format.isEmpty())
