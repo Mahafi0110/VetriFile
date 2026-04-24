@@ -676,6 +676,203 @@
                 gap: 24px;
             }
         }
+         nav {
+      background: #fff;
+      border-bottom: 1px solid var(--border, #E5E7EB);
+      padding: 13px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 1px 8px rgba(0, 0, 0, .05);
+    }
+
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-icon i {
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .brand-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1F2937;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-links a {
+      font-size: .9rem;
+      font-weight: 500;
+      color: #1F2937;
+      text-decoration: none;
+      padding: 7px 14px;
+      border-radius: 8px;
+      transition: background .2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      background: #F3F4F6;
+      color: #3B82F6;
+    }
+
+    .profile-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #F3F4F6;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 50px;
+      padding: 5px 14px 5px 5px;
+      cursor: pointer;
+      transition: border-color .2s;
+      font-family: 'Inter', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #1F2937;
+    }
+
+    .profile-btn:hover {
+      border-color: #3B82F6;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .profile-name {
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-menu-custom {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      background: #fff;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(30, 58, 138, .12);
+      min-width: 220px;
+      padding: 6px;
+      display: none;
+      z-index: 999;
+    }
+
+    .dropdown-menu-custom.open {
+      display: block;
+    }
+
+    .dropdown-header {
+      padding: 12px;
+      border-bottom: 1px solid #E5E7EB;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar-lg {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+      color: #fff;
+      font-size: .9rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+      flex-shrink: 0;
+    }
+
+    .dh-name {
+      font-weight: 700;
+      font-size: .88rem;
+      color: #1F2937;
+    }
+
+    .dh-email {
+      font-size: .75rem;
+      color: #4A5565;
+      margin-top: 2px;
+      word-break: break-all;
+    }
+
+    .dropdown-item-custom {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: .85rem;
+      font-weight: 500;
+      color: #1F2937;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+      transition: background .15s;
+    }
+
+    .dropdown-item-custom:hover {
+      background: #F3F4F6;
+    }
+
+    .dropdown-item-custom.logout {
+      color: #DC2626;
+    }
+
+    .dropdown-item-custom.logout:hover {
+      background: #FEF2F2;
+    }
     </style>
 </head>
 

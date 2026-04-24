@@ -165,6 +165,12 @@ public class VideoService {
                 System.out.println("FFMPEG: " + line);
             }
         }
+         // ✅ Timeout — kill FFMPEG if takes more than 5 minutes
+    boolean finished = process.waitFor(5, java.util.concurrent.TimeUnit.MINUTES);
+    if (!finished) {
+        process.destroyForcibly();
+        throw new RuntimeException("Video processing timed out. Try a shorter or smaller video.");
+    }
 
         int exitCode = process.waitFor();
         System.out.println("===== EXIT CODE: " + exitCode + " =====");
