@@ -1588,7 +1588,7 @@ function loadVideo() {
     );
     document.getElementById('infoOrigSize').textContent =
       formatSize(currentFile.size);
-    document.getElementById('infoEstSize').textContent ='Processing...';
+    document.getElementById('infoEstSize').textContent = formatSize(est);
     document.getElementById('infoResolution').textContent =
       res === 'original' ? 'Original' : res + 'p';
     document.getElementById('infoSaving').textContent =
