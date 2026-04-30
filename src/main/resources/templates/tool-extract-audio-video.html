@@ -11,7 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet" />
-   
+
     <style>
         :root {
             --blue-dark: #1E3A8A;
@@ -174,6 +174,13 @@
             text-decoration: none;
             margin-bottom: 6px;
             transition: color .2s;
+             /* 🔥 ADD THESE */
+    background: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    padding: 0;
+    cursor: pointer;
         }
 
         .back-link:hover {
@@ -275,9 +282,10 @@
             text-overflow: ellipsis;
             max-width: 100%;
         }
+
         .file-info-box div {
-    min-width: 0;
-}
+            min-width: 0;
+        }
 
 
         .file-info-size {
@@ -1153,14 +1161,45 @@
 </head>
 
 <body>
+ <nav class="navbar navbar-expand-lg">
+  <div class="container">
 
-    <!-- NAVBAR -->
-    <div id="vetri-navbar"></div>
+    <!-- Brand -->
+    <a class="navbar-brand" href="/">
+      <div class="brand-icon">
+        <i class="bi bi-file-earmark-text-fill"></i>
+      </div>
+      <span class="brand-name">Vetri Files</span>
+    </a>
 
+    <!-- Mobile Toggle -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Content -->
+    <div class="collapse navbar-collapse" id="mainNav">
+
+      <!-- Move links to RIGHT -->
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link active" href="/all-tools">Tools</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/Feature">Features</a>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</nav>
     <!-- PAGE HEADER -->
     <div class="page-header">
         <div class="container">
-            <a href="/file-tools" class="back-link"><i class="bi bi-arrow-left"></i> Back</a>
+            <!-- <a href="/file-tools" class="back-link"><i class="bi bi-arrow-left"></i> Back</a> -->
+            <button class="back-link" onclick="goBack()">
+                <i class="bi bi-arrow-left"></i> Back
+            </button>
             <h1 class="page-title">Extract Audio from Video</h1>
         </div>
     </div>
@@ -1516,7 +1555,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/auth.js"></script>        
+    <script src="/js/auth.js"></script>
     <script src="/js/vetri-file-helper.js"></script>
     <script>
         /* ─────────────────────────────────────────
@@ -1535,12 +1574,12 @@
                   then fall back to manual upload
         ───────────────────────────────────────── */
         window.addEventListener('DOMContentLoaded', () => {
-             // ✅ D_020 FIX — if opened directly (not from upload), show fresh state
-  if (!isFromUpload()) {
-    // Show "no file" state — don't load previous file
-    showNoFileState();
-    return;
-  }
+            // ✅ D_020 FIX — if opened directly (not from upload), show fresh state
+            if (!isFromUpload()) {
+                // Show "no file" state — don't load previous file
+                showNoFileState();
+                return;
+            }
             const stored = sessionStorage.getItem('vetri_file');
 
             if (stored) {
@@ -1565,13 +1604,20 @@
                 showUploadZone();
             }
         });
-
 function showNoFileState() {
-  document.getElementById('noVideoState').style.display = 'block';
-  document.getElementById('playerUI').style.display = 'none';
-  document.getElementById('fileInfoName').innerHTML =
-    '<a href="/" style="color:#3B82F6;font-size:.82rem;">← Upload a file first</a>';
+  const noVideo = document.getElementById('noVideoState');
+  const player = document.getElementById('playerUI');
+
+  if (noVideo) noVideo.style.display = 'block';
+  if (player) player.style.display = 'none'; // safe
+
+  const fileName = document.getElementById('fileInfoName');
+  if (fileName) {
+    fileName.innerHTML =
+      '<a href="/" style="color:#3B82F6;text-decoration:none;font-weight:bold;font-size:.82rem;"> ⇦ Upload a file first</a>';
+  }
 }
+
 
         function showUploadZone() {
             document.getElementById('dropZone').style.display = 'block';
@@ -1882,6 +1928,19 @@ function showNoFileState() {
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
             return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+         function goBack() {
+            const ref = document.referrer || "";
+
+            if (ref.includes('/all-tools')) {
+                window.location.href = '/all-tools';
+            } else if (ref.includes('/file-tools')) {
+                window.location.href = '/file-tools';
+            } else if (window.history.length > 1) {
+                window.history.back(); // smart fallback
+            } else {
+                window.location.href = '/';
+            }
         }
     </script>
 </body>

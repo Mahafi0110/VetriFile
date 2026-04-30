@@ -188,6 +188,7 @@
       text-decoration: none;
       margin-bottom: 18px;
       transition: color .2s;
+      outline:none;
     }
 
     .back-link:hover {
@@ -710,7 +711,7 @@
       </div>
     </div>
   </nav>  -->
-  <nav>
+  <!-- <nav>
     <div class="nav-inner">
       <a class="brand" href="/">
         <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
@@ -720,21 +721,56 @@
         <a href="/all-tools" class="active">Tools</a>
         <a href="/Feature">Features</a>
       </div>
-      <div id="navRight"></div>
     </div>
-  </nav>
+  </nav> -->
+     <nav class="navbar navbar-expand-lg">
+  <div class="container">
+
+    <!-- Brand -->
+    <a class="navbar-brand" href="/">
+      <div class="brand-icon">
+        <i class="bi bi-file-earmark-text-fill"></i>
+      </div>
+      <span class="brand-name">Vetri Files</span>
+    </a>
+
+    <!-- Mobile Toggle -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Content -->
+    <div class="collapse navbar-collapse" id="mainNav">
+
+      <!-- Move links to RIGHT -->
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link active" href="/all-tools">Tools</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/Feature">Features</a>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</nav>
   <!-- ═══════════════════════════════════════════════════════
      PAGE HEADER
 ════════════════════════════════════════════════════════ -->
   <div class="page-header">
     <div class="container">
-      <button class="back-link" onclick="goBack()">
+      <!-- <button class="back-link" onclick="goBack()">
         <i class="bi bi-arrow-left"></i> Back to Home
-      </button>
+      </button> -->
+       <a href="/" class="back-link">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
       <h1 class="page-title">All Tools</h1>
       <p class="page-subtitle">Explore our complete collection of file tools</p>
     </div>
   </div>
+   
 
 
   <!-- ═══════════════════════════════════════════════════════
@@ -898,7 +934,7 @@
           </a>
         </div> -->
           <div class="col-12 col-md-6 col-lg-4">
-            <a href="/tool-compress-image" class="tool-card">
+            <a href="/tool-remove-background" class="tool-card">
               <div class="tool-icon ti-teal-3"><i class="bi bi-file-earmark-zip-fill"></i></div>
               <div class="tool-info">
                 <p class="tool-name">Remove Background</p>
@@ -1137,16 +1173,30 @@
         window.location.href = '/login';
       });
     }
+    // function goBack() {
+    //   const ref = document.referrer;
+    //   if (ref.includes('/all-tools')) {
+    //     window.location.replace('/all-tools');
+    //   } else if (ref.includes('/file-tools')) {
+    //     window.location.replace('/file-tools');
+    //   } else {
+    //     window.location.replace('/');
+    //   }
+    // }
     function goBack() {
-      const ref = document.referrer;
-      if (ref.includes('/all-tools')) {
-        window.location.replace('/all-tools');
-      } else if (ref.includes('/file-tools')) {
-        window.location.replace('/file-tools');
-      } else {
-        window.location.replace('/');
-      }
-    }
+  const ref = document.referrer || "";
+
+  if (ref.includes('/all-tools')) {
+    window.location.href = '/all-tools';
+  } else if (ref.includes('/file-tools')) {
+    window.location.href = '/file-tools';
+  } else if (window.history.length > 1) {
+    window.history.back(); // smart fallback
+  } else {
+    window.location.href = '/';
+  }
+}
+
   </script>
   
 </body>

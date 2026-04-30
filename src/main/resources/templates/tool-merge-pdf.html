@@ -11,7 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet" />
-    <script src="/js/vetri-file-helper.js"></script>
+
 
     <style>
         :root {
@@ -174,6 +174,13 @@
             text-decoration: none;
             margin-bottom: 6px;
             transition: color .2s;
+             /* 🔥 ADD THESE */
+    background: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    padding: 0;
+    cursor: pointer;
         }
 
         .back-link:hover {
@@ -1041,37 +1048,47 @@
 </head>
 
 <body>
+  <nav class="navbar navbar-expand-lg">
+  <div class="container">
 
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <div class="brand-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
-                <span class="brand-name">Vetri Files</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="/all-tools">Tools</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
-                </ul>
-                <div class="d-flex align-items-center gap-2 mt-2 mt-lg-0">
-                    <a href="/login" class="nav-link btn-login">Login</a>
-                    <a href="/register" class="nav-link btn-get-started">Get Started</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <!-- Brand -->
+    <a class="navbar-brand" href="/">
+      <div class="brand-icon">
+        <i class="bi bi-file-earmark-text-fill"></i>
+      </div>
+      <span class="brand-name">Vetri Files</span>
+    </a>
 
+    <!-- Mobile Toggle -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Content -->
+    <div class="collapse navbar-collapse" id="mainNav">
+
+      <!-- Move links to RIGHT -->
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link active" href="/all-tools">Tools</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/Feature">Features</a>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</nav>
     <!-- PAGE HEADER -->
     <div class="page-header">
         <div class="container">
-            <a href="/file-tools" class="back-link">
+            <!-- <a href="/file-tools" class="back-link">
                 <i class="bi bi-arrow-left"></i> Back
-            </a>
+            </a> -->
+            <button class="back-link" onclick="goBack()">
+                <i class="bi bi-arrow-left"></i> Back
+            </button>
             <h1 class="page-title">Merge PDF</h1>
         </div>
     </div>
@@ -1942,6 +1959,19 @@
             document.getElementById('orderAsAdded').classList.add('active');
             renderFileList();
             updatePreview();
+        }
+         function goBack() {
+            const ref = document.referrer || "";
+
+            if (ref.includes('/all-tools')) {
+                window.location.href = '/all-tools';
+            } else if (ref.includes('/file-tools')) {
+                window.location.href = '/file-tools';
+            } else if (window.history.length > 1) {
+                window.history.back(); // smart fallback
+            } else {
+                window.location.href = '/';
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
