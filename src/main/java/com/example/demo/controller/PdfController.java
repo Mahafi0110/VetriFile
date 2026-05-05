@@ -38,25 +38,63 @@ public class PdfController {
         return buildStreamResponse(result, "merged_output.pdf", "application/pdf");
     }
 
+    // @PostMapping("/lock")
+    // public ResponseEntity<StreamingResponseBody> lockPdf(
+    //         @RequestParam("file") MultipartFile file,
+    //         @RequestParam("password") String password) throws IOException {
+
+    //     byte[] result = pdfService.lockPdf(file, password);
+    //     return buildStreamResponse(result,
+    //             "locked_" + file.getOriginalFilename(), "application/pdf");
+    // }
+
+    // @PostMapping("/unlock")
+    // public ResponseEntity<StreamingResponseBody> unlockPdf(
+    //         @RequestParam("file") MultipartFile file,
+    //         @RequestParam("password") String password) throws IOException {
+
+    //     byte[] result = pdfService.unlockPdf(file, password);
+    //     return buildStreamResponse(result,
+    //             "unlocked_" + file.getOriginalFilename(), "application/pdf");
+    // }
     @PostMapping("/lock")
-    public ResponseEntity<StreamingResponseBody> lockPdf(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("password") String password) throws IOException {
-
-        byte[] result = pdfService.lockPdf(file, password);
+public ResponseEntity<StreamingResponseBody> lockPdf(
+        @RequestParam("file")                                           MultipartFile file,
+        @RequestParam(value = "ownerPassword",   defaultValue = "")    String ownerPassword,
+        @RequestParam(value = "userPassword",    defaultValue = "")    String userPassword,
+        @RequestParam(value = "encryptionLevel", defaultValue = "128") String encryptionLevel,
+        @RequestParam(value = "allowPrint",      defaultValue = "true")  boolean allowPrint,
+        @RequestParam(value = "allowCopy",       defaultValue = "false") boolean allowCopy,
+        @RequestParam(value = "allowModify",     defaultValue = "false") boolean allowModify,
+        @RequestParam(value = "allowAnnotate",   defaultValue = "true")  boolean allowAnnotate) {
+    try {
+        byte[] result = pdfService.lockPdf(
+            file, ownerPassword, userPassword,
+            encryptionLevel, allowPrint, allowCopy,
+            allowModify, allowAnnotate);
         return buildStreamResponse(result,
-                "locked_" + file.getOriginalFilename(), "application/pdf");
+            "locked_" + file.getOriginalFilename(), "application/pdf");
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.badRequest().build();
     }
-
-    @PostMapping("/unlock")
-    public ResponseEntity<StreamingResponseBody> unlockPdf(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("password") String password) throws IOException {
-
+}
+@PostMapping("/unlock")
+public ResponseEntity<StreamingResponseBody> unlockPdf(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("password") String password) {
+    try {
         byte[] result = pdfService.unlockPdf(file, password);
         return buildStreamResponse(result,
-                "unlocked_" + file.getOriginalFilename(), "application/pdf");
+            "unlocked_" + file.getOriginalFilename(), "application/pdf");
+    } catch (IllegalArgumentException e) {
+        // PDF not encrypted — return 400
+        return ResponseEntity.badRequest().build();
+    } catch (Exception e) {
+        // Wrong password — return 401
+        return ResponseEntity.status(401).build();
     }
+}
 
     @PostMapping("/split")
     public ResponseEntity<StreamingResponseBody> splitPdf(

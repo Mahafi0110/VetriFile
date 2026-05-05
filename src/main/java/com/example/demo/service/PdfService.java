@@ -51,36 +51,108 @@ public class PdfService {
     }
 
     // ── LOCK PDF ──────────────────────────────
-    public byte[] lockPdf(MultipartFile file, String password) throws IOException {
-        try (InputStream is = file.getInputStream();
-             PDDocument document = PDDocument.load(is, MemoryUsageSetting.setupTempFileOnly())) {
+    // public byte[] lockPdf(MultipartFile file, String password) throws IOException {
+    //     try (InputStream is = file.getInputStream();
+    //          PDDocument document = PDDocument.load(is, MemoryUsageSetting.setupTempFileOnly())) {
 
-            AccessPermission ap = new AccessPermission();
-            ap.setCanPrint(false);
-            ap.setCanModify(false);
-            ap.setCanExtractContent(false);
+    //         AccessPermission ap = new AccessPermission();
+    //         ap.setCanPrint(false);
+    //         ap.setCanModify(false);
+    //         ap.setCanExtractContent(false);
 
-            StandardProtectionPolicy policy = new StandardProtectionPolicy(password, password, ap);
-            policy.setEncryptionKeyLength(128);
-            document.protect(policy);
+    //         StandardProtectionPolicy policy = new StandardProtectionPolicy(password, password, ap);
+    //         policy.setEncryptionKeyLength(128);
+    //         document.protect(policy);
 
+    //         ByteArrayOutputStream out = new ByteArrayOutputStream();
+    //         document.save(out);
+    //         return out.toByteArray();
+    //     }
+    // }
+
+    // // ── UNLOCK PDF ────────────────────────────
+    // public byte[] unlockPdf(MultipartFile file, String password) throws IOException {
+    //     try (InputStream is = file.getInputStream();
+    //          PDDocument document = PDDocument.load(is, password, MemoryUsageSetting.setupTempFileOnly())) {
+
+    //         document.setAllSecurityToBeRemoved(true);
+    //         ByteArrayOutputStream out = new ByteArrayOutputStream();
+    //         document.save(out);
+    //         return out.toByteArray();
+    //     }
+    // }
+    // ── LOCK PDF ──────────────────────────────
+public byte[] lockPdf(MultipartFile file,
+        String ownerPassword, String userPassword,
+        String encryptionLevel,
+        boolean allowPrint, boolean allowCopy,
+        boolean allowModify, boolean allowAnnotate)
+        throws IOException {
+
+    try (InputStream is = file.getInputStream();
+         PDDocument document = PDDocument.load(is, MemoryUsageSetting.setupTempFileOnly())) {
+
+        AccessPermission ap = new AccessPermission();
+        // ✅ Owner controls permissions — correctly mapped
+        ap.setCanPrint(allowPrint);
+        ap.setCanExtractContent(allowCopy);
+        ap.setCanModify(allowModify);
+        ap.setCanModifyAnnotations(allowAnnotate);
+        ap.setCanPrintDegraded(allowPrint);
+        ap.setCanExtractForAccessibility(allowCopy);
+
+        // ✅ Owner = controls permissions
+        // ✅ User  = open/view only
+        String effectiveOwner = ownerPassword.isEmpty() ? userPassword : ownerPassword;
+        String effectiveUser  = userPassword;
+
+        StandardProtectionPolicy policy =
+            new StandardProtectionPolicy(effectiveOwner, effectiveUser, ap);
+
+        int keyLength = "256".equals(encryptionLevel) ? 256 : 128;
+        policy.setEncryptionKeyLength(keyLength);
+
+        document.protect(policy);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        document.save(out);
+        return out.toByteArray();
+    }
+}
+
+// ── UNLOCK PDF ────────────────────────────
+public byte[] unlockPdf(MultipartFile file, String password) throws IOException {
+    try (InputStream is = file.getInputStream()) {
+        PDDocument document;
+        try {
+            // ✅ Try loading without password first — detect unprotected PDFs
+            document = PDDocument.load(is, MemoryUsageSetting.setupTempFileOnly());
+            if (!document.isEncrypted()) {
+                document.close();
+                // ✅ Return 400 so frontend can show "not encrypted" message
+                throw new IllegalArgumentException("PDF_NOT_ENCRYPTED");
+            }
+            document.close();
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            // PDF is encrypted — expected, continue
+        }
+
+        // ✅ Now load with password
+        try (InputStream is2 = file.getInputStream();
+             PDDocument doc = PDDocument.load(is2, password,
+                     MemoryUsageSetting.setupTempFileOnly())) {
+            doc.setAllSecurityToBeRemoved(true);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            document.save(out);
+            doc.save(out);
             return out.toByteArray();
+        } catch (Exception e) {
+            // Wrong password
+            throw new RuntimeException("WRONG_PASSWORD", e);
         }
     }
-
-    // ── UNLOCK PDF ────────────────────────────
-    public byte[] unlockPdf(MultipartFile file, String password) throws IOException {
-        try (InputStream is = file.getInputStream();
-             PDDocument document = PDDocument.load(is, password, MemoryUsageSetting.setupTempFileOnly())) {
-
-            document.setAllSecurityToBeRemoved(true);
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            document.save(out);
-            return out.toByteArray();
-        }
-    }
+}
 
     // ── SPLIT PDF ─────────────────────────────
     public byte[] splitPdf(MultipartFile file, int pageNumber) throws IOException {
