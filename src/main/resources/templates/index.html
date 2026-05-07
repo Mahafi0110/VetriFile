@@ -207,20 +207,22 @@
     #uploadError {
       display: none;
       align-items: center;
+      justify-content: center;
       gap: 10px;
-      margin-top: 14px;
-      padding: 10px 16px;
+      margin-top: 16px;
+      padding: 12px 20px;
       background: #FEF2F2;
-      border: 1px solid #FECACA;
-      border-radius: 10px;
+      border: 1.5px solid #FECACA;
+      border-radius: 12px;
       color: #B91C1C;
-      font-size: .84rem;
+      font-size: .86rem;
       font-weight: 500;
-      max-width: 380px;
+      width: 100%;
+      max-width: 460px;
       margin-left: auto;
       margin-right: auto;
-      text-align: left;
-      line-height: 1.4;
+      text-align: center;
+      line-height: 1.5;
     }
 
     /* ── Pills ── */
@@ -515,11 +517,12 @@
       border-color: var(--blue);
       color: var(--blue);
     }
+
     .navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
 
     @media(max-width:768px) {
@@ -597,11 +600,11 @@
         <button class="btn-choose" onclick="document.getElementById('fileInput').click();event.stopPropagation();">
           Choose File
         </button>
-        <!-- Error message box -->
-        <div id="uploadError">
-          <i class="bi bi-exclamation-circle-fill" style="font-size:1.1rem;flex-shrink:0;"></i>
-          <span id="uploadErrorText"></span>
-        </div>
+      </div>
+      <!-- Error message box -->
+      <div id="uploadError">
+        <i class="bi bi-exclamation-circle-fill" style="font-size:1.1rem;flex-shrink:0;"></i>
+        <span id="uploadErrorText"></span>
       </div>
 
       <div class="pills">
@@ -711,27 +714,32 @@
           <a href="/all-tools">All Tools</a>
           <a href="/Feature">Features</a>
           <a href="#">Pricing</a>
+          <a href="#">API</a>
         </div>
         <div class="col-6 col-md-2 footer-col">
           <h6>Tools</h6>
-          <a href="/all-tools">Documents</a>
-          <a href="/all-tools">Images</a>
-          <a href="/all-tools">Audio</a>
-          <a href="/all-tools">Video</a>
+          <a href="/all-tools#document-tools">Document Tools</a>
+          <a href="/all-tools#image-tools">Image Tools</a>
+          <a href="/all-tools#audio-tools">Audio Tools</a>
+          <a href="/all-tools#video-tools">Video Tools</a>
         </div>
         <div class="col-6 col-md-2 footer-col">
           <h6>Legal</h6>
           <a href="#">Privacy Policy</a>
           <a href="#">Terms of Service</a>
           <a href="#">Cookie Policy</a>
+          <a href="#">GDPR</a>
+
         </div>
       </div>
       <div class="footer-bottom">
         <span class="footer-copy">© 2026 Vetri Files. All rights reserved.</span>
         <div class="social-links">
-          <a href="#"><i class="bi bi-twitter-x"></i></a>
-          <a href="#"><i class="bi bi-github"></i></a>
-          <a href="#"><i class="bi bi-linkedin"></i></a>
+          <a href="https://www.instagram.com/vetriitsystems/" target="_blank" title="Instagram"><i
+              class="bi bi-instagram"></i></a>
+          <a href="https://x.com/VTSITPARK" target="_blank" title="GitHub"><i class="bi bi-twitter-x"></i></a>
+          <a href="https://www.linkedin.com/company/vetri-technology-solutions/" target="_blank" title="Linkedin"><i
+              class="bi bi-linkedin"></i></a>
         </div>
       </div>
     </div>
@@ -744,7 +752,7 @@
     /* ═══════════════════════════════════════════
        FILE UPLOAD — drag & drop + click to browse
     ═══════════════════════════════════════════ */
-    var MAX_FILE_MB = 500;
+    var MAX_FILE_MB = 10;
     var MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
 
     var card = document.getElementById('uploadCard');
@@ -836,7 +844,7 @@
         tx.oncomplete = function () {
           db.close();
           sessionStorage.setItem('vetri_storage_type', 'indexeddb');
-          sessionStorage.setItem('vetri_from_upload', 'true');
+          sessionStorage.setItem('vetri_from_upload', 'true'); // ✅  — keeps flag alive
           window.location.replace('/file-tools');
         };
 

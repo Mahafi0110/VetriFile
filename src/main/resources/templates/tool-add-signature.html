@@ -175,13 +175,13 @@
             text-decoration: none;
             margin-bottom: 6px;
             transition: color .2s;
-             /* 🔥 ADD THESE */
-    background: none;
-    border: none;
-    outline: none;
-    box-shadow: none;
-    padding: 0;
-    cursor: pointer;
+            /* 🔥 ADD THESE */
+            background: none;
+            border: none;
+            outline: none;
+            box-shadow: none;
+            padding: 0;
+            cursor: pointer;
         }
 
         .back-link:hover {
@@ -1265,6 +1265,26 @@
             pointer-events: none;
             z-index: 10;
         }
+        /* Target small laptops like 1024px */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+
+    .sig-tab {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 6px;
+        justify-content: center;
+        font: size 0.5em;
+    }
+
+    .sig-tab span {
+        display: none;   /* 👈 hide text ONLY in this range */
+    }
+
+    .sig-tab i {
+        font-size: 0rem;
+    }
+
+}
     </style>
 </head>
 
@@ -1295,38 +1315,38 @@
             </div>
         </div>
     </nav> -->
-     <nav class="navbar navbar-expand-lg">
-  <div class="container">
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
 
-    <!-- Brand -->
-    <a class="navbar-brand" href="/">
-      <div class="brand-icon">
-        <i class="bi bi-file-earmark-text-fill"></i>
-      </div>
-      <span class="brand-name">Vetri Files</span>
-    </a>
+            <!-- Brand -->
+            <a class="navbar-brand" href="/">
+                <div class="brand-icon">
+                    <i class="bi bi-file-earmark-text-fill"></i>
+                </div>
+                <span class="brand-name">Vetri Files</span>
+            </a>
 
-    <!-- Mobile Toggle -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-    <!-- Navbar Content -->
-    <div class="collapse navbar-collapse" id="mainNav">
+            <!-- Navbar Content -->
+            <div class="collapse navbar-collapse" id="mainNav">
 
-      <!-- Move links to RIGHT -->
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <a class="nav-link active" href="/all-tools">Tools</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/Feature">Features</a>
-        </li>
-      </ul>
+                <!-- Move links to RIGHT -->
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/all-tools">Tools</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Feature">Features</a>
+                    </li>
+                </ul>
 
-    </div>
-  </div>
-</nav>
+            </div>
+        </div>
+    </nav>
     <!-- ════════════════════════════════
      PAGE HEADER
 ════════════════════════════════ -->
@@ -1705,7 +1725,7 @@
                     <p class="footer-col-title">Product</p>
                     <ul class="footer-links">
                         <li><a href="/all-tools">All Tools</a></li>
-                        <li><a href="#">Features</a></li>
+                        <li><a href="/Feature">Features</a></li>
                         <li><a href="#">Pricing</a></li>
                         <li><a href="#">API</a></li>
                     </ul>
@@ -1713,10 +1733,10 @@
                 <div class="col-6 col-md-3 col-lg-2">
                     <p class="footer-col-title">All Tools</p>
                     <ul class="footer-links">
-                        <li><a href="/all-tools">Document Tools</a></li>
-                        <li><a href="/all-tools">Image Tools</a></li>
-                        <li><a href="/all-tools">Audio Tools</a></li>
-                        <li><a href="/all-tools">Video Tools</a></li>
+                        <li><a href="/all-tools#document-tools">Document Tools</a></li>
+                        <li><a href="/all-tools#image-tools">Image Tools</a></li>
+                        <li><a href="/all-tools#audio-tools">Audio Tools</a></li>
+                        <li><a href="/all-tools#video-tools">Video Tools</a></li>
                     </ul>
                 </div>
                 <div class="col-6 col-md-3 col-lg-2">
@@ -1732,9 +1752,9 @@
             <div class="footer-bottom d-flex flex-column flex-sm-row align-items-center justify-content-between">
                 <p class="footer-copy mb-0">© 2026 Vetri Files. All rights reserved.</p>
                 <div class="social-links mt-3 mt-sm-0">
-                    <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
-                    <a href="#" aria-label="GitHub"><i class="bi bi-github"></i></a>
-                    <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+          <a href="https://www.instagram.com/vetriitsystems/" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="https://x.com/VTSITPARK" target="_blank" title="GitHub"><i class="bi bi-twitter-x"></i></a>
+          <a href="https://www.linkedin.com/company/vetri-technology-solutions/" target="_blank" title="Linkedin"><i class="bi bi-linkedin"></i></a>
                 </div>
             </div>
         </div>
@@ -3228,7 +3248,8 @@
                     .catch(err => {
                         clearInterval(interval);
                         processingModal.classList.remove('show');
-                        alert('Could not read file: ' + err.message);
+                        // alert('Could not read file: ' + err.message);
+                        alert('Something went wrong. Please try again.');
                     });
             }
         }

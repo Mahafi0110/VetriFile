@@ -58,34 +58,86 @@ public class AudioService {
     }
 
     // ── COMPRESS AUDIO ────────────────────────
-    public File compressAudio(MultipartFile file, int bitrate, String format, String sampleRate) throws IOException, InterruptedException {
+    // public File compressAudio(MultipartFile file, int bitrate, String format, String sampleRate) throws IOException, InterruptedException {
 
-        if (bitrate <= 0)                              bitrate    = 128;
-        if (format     == null || format.isEmpty())    format     = "mp3";
-        if (sampleRate == null || sampleRate.isEmpty()) sampleRate = "44100";
+    //     if (bitrate <= 0)                              bitrate    = 128;
+    //     if (format     == null || format.isEmpty())    format     = "mp3";
+    //     if (sampleRate == null || sampleRate.isEmpty()) sampleRate = "44100";
 
-        File input  = File.createTempFile("input_"      + System.currentTimeMillis(), getExtension(file), new File(System.getProperty("java.io.tmpdir")));
-        File output = File.createTempFile("compressed_" + System.currentTimeMillis(), "." + format,       new File(System.getProperty("java.io.tmpdir")));
+    //     File input  = File.createTempFile("input_"      + System.currentTimeMillis(), getExtension(file), new File(System.getProperty("java.io.tmpdir")));
+    //     File output = File.createTempFile("compressed_" + System.currentTimeMillis(), "." + format,       new File(System.getProperty("java.io.tmpdir")));
 
-        file.transferTo(input);
+    //     file.transferTo(input);
 
-        List<String> cmd = Arrays.asList(
-                FFMPEG, "-y",
-                "-threads", "1",
-                "-i", input.getAbsolutePath(),
-                "-b:a", bitrate + "k",
-                "-ar", sampleRate,
-                output.getAbsolutePath()
-        );
+    //     List<String> cmd = Arrays.asList(
+    //             FFMPEG, "-y",
+    //             "-threads", "1",
+    //             "-i", input.getAbsolutePath(),
+    //             "-b:a", bitrate + "k",
+    //             "-ar", sampleRate,
+    //             output.getAbsolutePath()
+    //     );
 
-        runFFmpeg(cmd);
+    //     runFFmpeg(cmd);
 
-        input.delete();
+    //     input.delete();
 
-        // return original if compression not effective
-        if (output.length() >= input.length()) return input;
-        return output;
+    //     // return original if compression not effective
+    //     if (output.length() >= input.length()) return input;
+    //     return output;
+    // }
+    // ── COMPRESS AUDIO ────────────────────────
+public File compressAudio(MultipartFile file, int bitrate,
+        String format, String sampleRate)
+        throws IOException, InterruptedException {
+
+    if (bitrate <= 0)                               bitrate    = 128;
+    if (format     == null || format.isEmpty())     format     = "mp3";
+    if (sampleRate == null || sampleRate.isEmpty()) sampleRate = "44100";
+
+    File input  = createTemp("input_",      getExtension(file));
+    File output = createTemp("compressed_", "." + format);
+
+    file.transferTo(input);
+
+    // ✅ Use correct codec for each format
+    List<String> cmd = Arrays.asList(
+        FFMPEG, "-y",
+        "-threads", "1",
+        "-i",      input.getAbsolutePath(),
+        "-b:a",    bitrate + "k",
+        "-ar",     sampleRate,
+        "-acodec", getAudioCodec(format),  // ✅ ADD THIS
+        output.getAbsolutePath()
+    );
+
+    runFFmpeg(cmd);
+    input.delete();
+    return output;
+}
+
+// ✅ ADD THIS METHOD to AudioService
+private String getAudioCodec(String format) {
+    if (format == null) return "libmp3lame";
+    switch (format.toLowerCase()) {
+        case "mp3":  return "libmp3lame";
+        case "aac":  return "aac";
+        case "ogg":  return "libvorbis";
+        case "m4a":  return "aac";
+        case "wav":  return "pcm_s16le";
+        case "flac": return "flac";
+        default:     return "libmp3lame";
     }
+}
+
+// ✅ ADD THIS HELPER too (used in compressAudio)
+private File createTemp(String prefix, String suffix) throws IOException {
+    return File.createTempFile(
+        prefix + System.currentTimeMillis(),
+        suffix,
+        new File(System.getProperty("java.io.tmpdir"))
+    );
+}
 
     // ── MERGE AUDIO ───────────────────────────
     public File mergeAudio(MultipartFile[] files, String format, int bitrate, double gap) throws IOException, InterruptedException {
