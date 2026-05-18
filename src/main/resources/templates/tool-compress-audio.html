@@ -1791,11 +1791,28 @@
                 .classList.add('show');
             }, 400);
           })
-          .catch(err => {
-            clearInterval(interval);
-            processingModal.classList.remove('show');
-            alert('Compression failed. Please try again with a different audio file.');
-          });
+        // ✅ Replace with this
+.catch(err => {
+    clearInterval(interval);
+    processingModal.classList.remove('show');
+
+    if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        showNetworkError(
+            'No Internet Connection',
+            'Your connection was lost while compressing. Please check your WiFi and try again.'
+        );
+    } else if (err.message === 'too_large') {
+        showNetworkError(
+            'File Too Large',
+            'Your audio file is too large to process. Please try a smaller file.'
+        );
+    } else {
+        showNetworkError(
+            'Something Went Wrong',
+            'Could not compress your audio. Please try again.'
+        );
+    }
+});
       });
     }
 
