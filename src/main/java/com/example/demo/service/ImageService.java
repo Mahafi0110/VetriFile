@@ -139,6 +139,12 @@ public class ImageService {
     //  Paid plans: full resolution
     // ────────────────────────────────────────────────────────────────────────
     private byte[] callRemoveBgApi(MultipartFile file) throws Exception {
+
+         // ✅ ADD THIS — tells you in Render logs if API is being called
+    System.out.println("[RemoveBg] API key present: " + 
+        (removeBgApiKey != null && !removeBgApiKey.isBlank()));
+    System.out.println("[RemoveBg] File: " + file.getOriginalFilename() + 
+        " size: " + file.getSize());
         String boundary = UUID.randomUUID().toString();
 
         // Build multipart body manually (Java 11 HttpClient)
@@ -205,6 +211,19 @@ public class ImageService {
             throws IOException {
 
         BufferedImage src = ImageIO.read(file.getInputStream());
+
+// ✅ Add null check — ImageIO returns null for unsupported formats
+if (src == null) {
+    // Try reading with a copy of the stream
+    try (InputStream is2 = file.getInputStream()) {
+        src = ImageIO.read(new javax.imageio.stream.MemoryCacheImageInputStream(is2));
+    }
+}
+
+if (src == null) {
+    throw new IOException("Cannot read image file: " + file.getOriginalFilename() 
+        + ". Supported formats: JPG, PNG, BMP, GIF, TIFF");
+}
         int W = src.getWidth();
         int H = src.getHeight();
 

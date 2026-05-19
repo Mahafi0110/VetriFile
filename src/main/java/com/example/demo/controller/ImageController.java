@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/api/image")
@@ -88,6 +89,7 @@ public class ImageController {
     //    3. Composites the chosen background colour on top of the transparent PNG
     //    4. Returns the final image in the requested format
     //
+    
     @PostMapping("/remove-background")
     public ResponseEntity<StreamingResponseBody> removeBackground(
             @RequestParam("file")                                    MultipartFile file,
@@ -111,6 +113,15 @@ public class ImageController {
                 ? "image/jpeg" : "image/" + format;
 
         return buildStreamResponse(result, outputName, mimeType);
+    }
+     // ── TEST: verify remove.bg API key is loaded ──────────────────────────────
+    @GetMapping("/test/removebg-key")
+    public ResponseEntity<String> testRemoveBgKey(
+            @Value("${app.removebg.api-key:NOT_SET}") String key) {
+        if ("NOT_SET".equals(key) || key.isBlank()) {
+            return ResponseEntity.ok("Key NOT set — add REMOVEBG_API_KEY to Render environment");
+        }
+        return ResponseEntity.ok("Key is set: " + key.substring(0, 4) + "**** length=" + key.length());
     }
 
     // ── HELPER ───────────────────────────────────────────────────────────────
