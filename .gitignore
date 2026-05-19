@@ -39,3 +39,7 @@ application-local.properties
 data/
 *.mv.db
 *.trace.db
+
+# ✅ ADD THESE — prevents secrets from being pushed
+application-secrets.properties
+application-prod.properties
